@@ -56,7 +56,7 @@ function createCourses() {
   ];
 
   courses.forEach(course => {
-    const result = db.prepare(`
+    db.prepare(`
       INSERT OR REPLACE INTO courses (title, description, order_index)
       VALUES (?, ?, ?)
     `).run(course.title, course.description, course.order_index);
@@ -121,7 +121,7 @@ function createLessons() {
 
   lessons.forEach(lesson => {
     if (lesson.content) {
-      const result = db.prepare(`
+      db.prepare(`
         INSERT OR REPLACE INTO lessons (course_id, title, content, order_index)
         VALUES (?, ?, ?, ?)
       `).run(lesson.course_id, lesson.title, lesson.content, lesson.order_index);
@@ -147,7 +147,7 @@ function createTests() {
   ];
 
   tests.forEach(test => {
-    const result = db.prepare(`
+    db.prepare(`
       INSERT OR REPLACE INTO tests (course_id, title, description)
       VALUES (?, ?, ?)
     `).run(test.course_id, test.title, test.description);
@@ -289,7 +289,7 @@ function createTestQuestions() {
   const allQuestions = [...tasksQuestions, ...finalQuestions];
 
   allQuestions.forEach(question => {
-    const result = db.prepare(`
+    db.prepare(`
       INSERT OR REPLACE INTO test_questions (test_id, question, options, correct_answer, order_index)
       VALUES (?, ?, ?, ?, ?)
     `).run(question.test_id, question.question, question.options, question.correct_answer, question.order_index);

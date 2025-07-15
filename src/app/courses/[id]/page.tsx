@@ -70,18 +70,18 @@ export default function CoursePage() {
 
   if (loading || loadingContent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-xl">Загрузка...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Необходима авторизация</h2>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <h2 className="text-2xl font-bold text-white mb-4">Необходима авторизация</h2>
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             Вернуться на главную
           </Link>
         </div>
@@ -91,10 +91,10 @@ export default function CoursePage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Курс не найден</h2>
-          <Link href="/modules" className="text-blue-600 hover:text-blue-800">
+          <h2 className="text-2xl font-bold text-white mb-4">Курс не найден</h2>
+          <Link href="/modules" className="text-blue-400 hover:text-blue-300">
             Назад к модулям
           </Link>
         </div>
@@ -103,13 +103,13 @@ export default function CoursePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <nav className="flex justify-between items-center mb-8">
-          <Link href="/modules" className="text-blue-600 hover:text-blue-800">
+          <Link href="/modules" className="text-blue-400 hover:text-blue-300">
             ← Назад к модулям
           </Link>
-          <div className="text-lg font-semibold text-gray-900">
+          <div className="text-lg font-semibold text-white">
             {user?.name}
           </div>
         </nav>
@@ -117,28 +117,28 @@ export default function CoursePage() {
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Боковая панель с навигацией */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="bg-gray-800 rounded-lg shadow-lg p-6 sticky top-8">
+              <h2 className="text-xl font-bold text-white mb-4">
                 {course.title}
               </h2>
-              <p className="text-gray-600 mb-6 text-sm">
+              <p className="text-gray-300 mb-6 text-sm">
                 {course.description}
               </p>
               
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 mb-3">Уроки:</h3>
+                <h3 className="font-semibold text-white mb-3">Уроки:</h3>
                 {lessons.map((lesson) => (
                   <button
                     key={lesson.id}
                     onClick={() => setCurrentLesson(lesson)}
                     className={`w-full text-left p-3 rounded-lg transition-colors ${
                       currentLesson?.id === lesson.id
-                        ? 'bg-blue-100 text-blue-800 border-l-4 border-blue-500'
-                        : 'hover:bg-gray-50 text-gray-700'
+                        ? 'bg-blue-900 text-blue-200 border-l-4 border-blue-400'
+                        : 'hover:bg-gray-700 text-gray-300'
                     }`}
                   >
                     <div className="font-medium">{lesson.title}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-400">
                       Урок {lesson.order_index}
                     </div>
                   </button>
@@ -158,14 +158,14 @@ export default function CoursePage() {
 
           {/* Основной контент */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg">
+            <div className="bg-gray-800 rounded-lg shadow-lg">
               {currentLesson ? (
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-3xl font-bold text-white">
                       {currentLesson.title}
                     </h1>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-400">
                       Урок {currentLesson.order_index}
                     </div>
                   </div>
@@ -198,17 +198,17 @@ export default function CoursePage() {
                       )}
                     </div>
                     
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-400">
                       {lessons.findIndex(l => l.id === currentLesson.id) + 1} из {lessons.length}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="p-8 text-center">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  <h2 className="text-2xl font-bold text-white mb-4">
                     Уроки не найдены
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     Для этого курса пока нет доступных уроков
                   </p>
                 </div>

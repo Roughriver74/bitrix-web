@@ -12,16 +12,16 @@ interface Course {
   created_at: string;
 }
 
-interface Progress {
-  course_id: number;
-  completed: boolean;
-  score: number;
-}
+// interface Progress {
+//   course_id: number;
+//   completed: boolean;
+//   score: number;
+// }
 
 export default function ModulesPage() {
   const { user, loading } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [progress, setProgress] = useState<Record<number, Progress>>({});
+  // const [progress, setProgress] = useState<Record<number, Progress>>({});
   const [loadingCourses, setLoadingCourses] = useState(true);
 
   useEffect(() => {
@@ -47,18 +47,18 @@ export default function ModulesPage() {
 
   if (loading || loadingCourses) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-xl">Загрузка...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Необходима авторизация</h2>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <h2 className="text-2xl font-bold text-white mb-4">Необходима авторизация</h2>
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             Вернуться на главную
           </Link>
         </div>
@@ -67,40 +67,40 @@ export default function ModulesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <nav className="flex justify-between items-center mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             ← Назад к главной
           </Link>
-          <div className="text-lg font-semibold text-gray-900">
+          <div className="text-lg font-semibold text-white">
             Добро пожаловать, {user?.name}!
           </div>
         </nav>
 
         <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             Модули курса по Битрикс24
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Пройдите все модули для получения полного представления о системе Битрикс24
           </p>
         </header>
 
         <div className="grid gap-6 max-w-4xl mx-auto">
           {courses.map((course) => (
-            <div key={course.id} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div key={course.id} className="bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center mb-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg font-bold mr-4">
                       {course.order_index}
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-900">
+                    <h2 className="text-2xl font-semibold text-white">
                       {course.title}
                     </h2>
                   </div>
-                  <p className="text-gray-600 mb-4 ml-14">
+                  <p className="text-gray-300 mb-4 ml-14">
                     {course.description}
                   </p>
                   <div className="ml-14 flex items-center space-x-4">
@@ -119,19 +119,7 @@ export default function ModulesPage() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  {progress[course.id] && (
-                    <div className="text-sm text-gray-500">
-                      {progress[course.id].completed ? (
-                        <span className="text-green-600 font-semibold">
-                          ✓ Завершено
-                        </span>
-                      ) : (
-                        <span className="text-yellow-600 font-semibold">
-                          В процессе
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  {/* Progress display temporarily disabled */}
                 </div>
               </div>
             </div>
@@ -140,15 +128,15 @@ export default function ModulesPage() {
 
         {courses.length === 0 && (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Курсы не найдены
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-300 mb-6">
               Курсы еще не загружены в систему
             </p>
             <Link
               href="/"
-              className="text-blue-600 hover:text-blue-800"
+              className="text-blue-400 hover:text-blue-300"
             >
               Вернуться на главную
             </Link>
@@ -156,29 +144,29 @@ export default function ModulesPage() {
         )}
 
         <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="bg-gray-800 rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Структура обучения
             </h2>
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-3xl mb-2">📚</div>
-                <h3 className="font-semibold text-gray-900 mb-2">Теория</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-white mb-2">Теория</h3>
+                <p className="text-gray-300 text-sm">
                   Изучение основных понятий и принципов
                 </p>
               </div>
               <div>
                 <div className="text-3xl mb-2">🎯</div>
-                <h3 className="font-semibold text-gray-900 mb-2">Практика</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-white mb-2">Практика</h3>
+                <p className="text-gray-300 text-sm">
                   Выполнение практических заданий
                 </p>
               </div>
               <div>
                 <div className="text-3xl mb-2">📋</div>
-                <h3 className="font-semibold text-gray-900 mb-2">Тестирование</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-white mb-2">Тестирование</h3>
+                <p className="text-gray-300 text-sm">
                   Проверка полученных знаний
                 </p>
               </div>

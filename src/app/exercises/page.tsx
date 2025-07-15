@@ -205,18 +205,18 @@ export default function ExercisesPage() {
 
   if (loading || loadingContent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-xl">Загрузка...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Необходима авторизация</h2>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <h2 className="text-2xl font-bold text-white mb-4">Необходима авторизация</h2>
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             Вернуться на главную
           </Link>
         </div>
@@ -225,23 +225,23 @@ export default function ExercisesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <nav className="flex justify-between items-center mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
+          <Link href="/" className="text-blue-400 hover:text-blue-300">
             ← Назад к главной
           </Link>
-          <div className="text-lg font-semibold text-gray-900">
+          <div className="text-lg font-semibold text-white">
             Добро пожаловать, {user?.name}!
           </div>
         </nav>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-5xl mx-auto">
+        <div className="bg-gray-800 rounded-lg shadow-lg p-8 max-w-5xl mx-auto">
           <header className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               Практические упражнения
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-300">
               Закрепите полученные знания на практике
             </p>
           </header>

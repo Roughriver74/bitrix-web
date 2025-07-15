@@ -86,7 +86,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
   if (loading || lessonsLoading || courseId === null) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-xl text-gray-900 dark:text-gray-100">Загрузка...</div>
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-3xl font-bold text-white">
                 Уроки курса: {course?.title}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">Управление уроками</p>
@@ -129,7 +129,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
         </div>
 
         {/* Уроки */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           {lessons.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400">Нет уроков</p>
           ) : (
@@ -138,7 +138,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
                 <div key={lesson.id} className="border dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         {lesson.title}
                       </h3>
                       <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
@@ -218,7 +218,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
   const [loading, setLoading] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [selectedText, setSelectedText] = useState({ start: 0, end: 0 });
+  // const [selectedText, setSelectedText] = useState({ start: 0, end: 0 });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,10 +318,10 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-white">
               {lesson ? 'Редактировать урок' : 'Добавить урок'}
             </h3>
             <div className="flex space-x-2">
@@ -350,7 +350,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Название
                 </label>
                 <input
@@ -358,33 +358,33 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Порядок
                 </label>
                 <input
                   type="number"
                   value={orderIndex}
                   onChange={(e) => setOrderIndex(parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Содержание (Markdown)
                 </label>
                 
                 {/* Панель инструментов для редактора */}
-                <div className="border border-gray-300 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-2 items-center">
+                <div className="border border-gray-600 rounded-t-md bg-gray-700 p-2 flex flex-wrap gap-2 items-center">
                   <button
                     type="button"
                     onClick={() => insertMarkdown('**жирный текст**')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Жирный текст"
                   >
                     <strong>B</strong>
@@ -392,7 +392,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('*курсив*')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Курсив"
                   >
                     <em>I</em>
@@ -400,7 +400,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('# ')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Заголовок 1"
                   >
                     H1
@@ -408,7 +408,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('## ')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Заголовок 2"
                   >
                     H2
@@ -416,7 +416,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('### ')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Заголовок 3"
                   >
                     H3
@@ -424,7 +424,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('- ')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Список"
                   >
                     • List
@@ -432,7 +432,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('> ')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Цитата"
                   >
                     Quote
@@ -440,7 +440,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('```\n\n```')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Блок кода"
                   >
                     Code
@@ -448,14 +448,14 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   <button
                     type="button"
                     onClick={() => insertMarkdown('[текст ссылки](url)')}
-                    className="px-2 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                    className="px-2 py-1 bg-gray-600 rounded text-sm hover:bg-gray-500 text-white"
                     title="Ссылка"
                   >
                     Link
                   </button>
                   
-                  <div className="border-l border-gray-300 pl-2 ml-2">
-                    <label className="px-2 py-1 bg-blue-200 rounded text-sm hover:bg-blue-300 cursor-pointer">
+                  <div className="border-l border-gray-600 pl-2 ml-2">
+                    <label className="px-2 py-1 bg-blue-600 rounded text-sm hover:bg-blue-500 cursor-pointer text-white">
                       {uploadingImage ? 'Загрузка...' : '📷 Изображение'}
                       <input
                         type="file"
@@ -473,7 +473,7 @@ function LessonFormModal({ lesson, courseId, onClose, onSave }: LessonFormModalP
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={15}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none bg-gray-700 text-white"
                   placeholder="# Заголовок урока
 
 ## Подзаголовок
@@ -533,13 +533,13 @@ interface LessonPreviewModalProps {
 function LessonPreviewModal({ lesson, onClose }: LessonPreviewModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
         <div className="p-6 border-b">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Просмотр урока</h3>
+            <h3 className="text-lg font-semibold text-white">Просмотр урока</h3>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-400 hover:text-gray-200"
             >
               ✕
             </button>
@@ -547,7 +547,7 @@ function LessonPreviewModal({ lesson, onClose }: LessonPreviewModalProps) {
         </div>
         
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <h2 className="text-2xl font-bold mb-4">{lesson.title}</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">{lesson.title}</h2>
           <MarkdownRenderer content={lesson.content} />
         </div>
       </div>

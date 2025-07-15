@@ -12,14 +12,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
     const { searchParams } = new URL(request.url);
     const testId = searchParams.get('testId');
     const userId = searchParams.get('userId');
 
     let query = 'SELECT * FROM test_results';
-    let params: any[] = [];
+    const params: (string | number)[] = [];
 
     if (testId && userId) {
       query += ' WHERE test_id = ? AND user_id = ?';
@@ -52,17 +52,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     const { test_id, answers } = await request.json();
 
     // Получаем вопросы теста
-    const questions = db.prepare('SELECT * FROM test_questions WHERE test_id = ? ORDER BY order_index').all(test_id);
+    const questions = db.prepare('SELECT * FROM test_questions WHERE test_id = ? ORDER BY order_index').all(test_id) as { id: number; test_id: number; question: string; options: string; correct_answer: number; order_index: number }[];
     
     // Подсчитываем баллы
     let score = 0;
     const maxScore = questions.length;
     
-    questions.forEach((question: any, index: number) => {
+    questions.forEach((question, index) => {
       if (answers[index] === question.correct_answer) {
         score++;
       }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     `).run(decoded.userId, test_id, score, maxScore, JSON.stringify(answers));
 
     // Обновляем прогресс пользователя
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(test_id);
+    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(test_id) as { id: number; course_id: number; lesson_id?: number; title: string; description?: string; created_at: string } | undefined;
     if (test) {
       db.prepare(`
         INSERT OR REPLACE INTO user_progress (user_id, course_id, lesson_id, completed, score, completed_at)

@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
     let query = 'SELECT * FROM tests';
-    let params: any[] = [];
+    const params: (string | number)[] = [];
 
     if (courseId) {
       query += ' WHERE course_id = ?';
@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
     // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
     if (!user || !user.is_admin) {
       return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
     }

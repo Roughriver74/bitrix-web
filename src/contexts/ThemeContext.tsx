@@ -21,6 +21,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem('theme') as Theme
     if (stored) {
       setTheme(stored)
+    } else {
+      // Если нет сохраненной темы, устанавливаем темную по умолчанию
+      setTheme('dark')
     }
   }, [])
 
@@ -40,7 +43,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   if (!mounted) {
-    return null
+    // Показываем темную тему во время загрузки
+    return (
+      <div className="dark">
+        {children}
+      </div>
+    )
   }
 
   return (

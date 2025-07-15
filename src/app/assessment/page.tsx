@@ -94,26 +94,26 @@ export default function AssessmentPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Link 
             href="/" 
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
+            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-4"
           >
             ← Назад к главной
           </Link>
           
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             Оценка знаний
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
+          <p className="text-xl text-gray-300">
             Проверьте свои знания с помощью тестов
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export default function AssessmentPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-white">
                   Пройдено тестов
                 </h3>
                 <p className="text-2xl font-bold text-blue-500">
@@ -131,7 +131,7 @@ export default function AssessmentPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function AssessmentPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-white">
                   Средний балл
                 </h3>
                 <p className="text-2xl font-bold text-green-500">
@@ -149,7 +149,7 @@ export default function AssessmentPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@ export default function AssessmentPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-white">
                   Прогресс
                 </h3>
                 <p className="text-2xl font-bold text-purple-500">
@@ -170,11 +170,11 @@ export default function AssessmentPage() {
 
         <div className="space-y-6">
           {assessments.map((test) => (
-            <div key={test.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div key={test.id} className="bg-gray-800 rounded-lg shadow-lg p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-4">
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <span className="text-2xl font-bold text-white">
                       {test.id}
                     </span>
                     <div className="flex space-x-2">
@@ -195,15 +195,15 @@ export default function AssessmentPage() {
                     </div>
                   </div>
                   
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-xl font-semibold text-white mb-2">
                     {test.title}
                   </h2>
                   
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="text-gray-300 mb-4">
                     {test.description}
                   </p>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-400 mb-4">
                     <div>
                       <span className="block font-medium">Модуль:</span>
                       <span>{test.module}</span>
@@ -249,7 +249,7 @@ export default function AssessmentPage() {
                     {test.completed && (
                       <Link 
                         href={`/assessment/${test.id}/results`}
-                        className="border border-blue-500 text-blue-500 px-4 py-2 rounded text-center hover:bg-blue-50 transition-colors"
+                        className="border border-blue-400 text-blue-400 px-4 py-2 rounded text-center hover:bg-gray-700 transition-colors"
                       >
                         Результаты
                       </Link>
@@ -261,16 +261,16 @@ export default function AssessmentPage() {
           ))}
         </div>
 
-        <div className="mt-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+        <div className="mt-12 bg-gray-800 rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
             Правила тестирования
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 📋 Общие правила
               </h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+              <ul className="space-y-2 text-gray-300">
                 <li>• Каждый тест можно пересдавать неограниченное количество раз</li>
                 <li>• Время на прохождение теста ограничено</li>
                 <li>• Результаты сохраняются автоматически</li>
@@ -278,10 +278,10 @@ export default function AssessmentPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 🎯 Рекомендации
               </h3>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+              <ul className="space-y-2 text-gray-300">
                 <li>• Изучите соответствующий модуль перед тестированием</li>
                 <li>• Выполните практические задания</li>
                 <li>• Внимательно читайте вопросы</li>

@@ -50,40 +50,48 @@ export default function AdminPage() {
 
   if (loading || coursesLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl">Загрузка...</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
 
   if (!user || !user.is_admin) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-red-600">Доступ запрещен</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-xl text-red-400">Доступ запрещен</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">Админ панель</h1>
-            <Link 
-              href="/" 
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-              На главную
-            </Link>
+            <h1 className="text-3xl font-bold text-white">Админ панель</h1>
+            <div className="flex space-x-2">
+              <Link 
+                href="/admin/tests" 
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Управление тестами
+              </Link>
+              <Link 
+                href="/" 
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+              >
+                На главную
+              </Link>
+            </div>
           </div>
-          <p className="text-gray-600">Управление курсами и уроками</p>
+          <p className="text-gray-300">Управление курсами и уроками</p>
         </div>
 
         {/* Управление курсами */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">Курсы</h2>
+            <h2 className="text-2xl font-semibold text-white">Курсы</h2>
             <button
               onClick={() => setShowCourseForm(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -93,18 +101,18 @@ export default function AdminPage() {
           </div>
 
           {courses.length === 0 ? (
-            <p className="text-gray-500">Нет курсов</p>
+            <p className="text-gray-400">Нет курсов</p>
           ) : (
             <div className="space-y-4">
               {courses.map((course) => (
-                <div key={course.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                <div key={course.id} className="border border-gray-600 rounded-lg p-4 hover:bg-gray-700">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         {course.title}
                       </h3>
-                      <p className="text-gray-600 mb-2">{course.description}</p>
-                      <div className="text-sm text-gray-500">
+                      <p className="text-gray-300 mb-2">{course.description}</p>
+                      <div className="text-sm text-gray-400">
                         ID: {course.id} | Создан: {new Date(course.created_at).toLocaleDateString()}
                       </div>
                     </div>
@@ -136,20 +144,20 @@ export default function AdminPage() {
         </div>
 
         {/* Статистика */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Статистика</h2>
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-semibold text-white mb-4">Статистика</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-blue-900">Всего курсов</h3>
-              <p className="text-2xl font-bold text-blue-600">{courses.length}</p>
+            <div className="bg-blue-900 p-4 rounded-lg">
+              <h3 className="text-lg font-medium text-blue-200">Всего курсов</h3>
+              <p className="text-2xl font-bold text-blue-400">{courses.length}</p>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-green-900">Активных пользователей</h3>
-              <p className="text-2xl font-bold text-green-600">-</p>
+            <div className="bg-green-900 p-4 rounded-lg">
+              <h3 className="text-lg font-medium text-green-200">Активных пользователей</h3>
+              <p className="text-2xl font-bold text-green-400">-</p>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium text-purple-900">Пройденных тестов</h3>
-              <p className="text-2xl font-bold text-purple-600">-</p>
+            <div className="bg-purple-900 p-4 rounded-lg">
+              <h3 className="text-lg font-medium text-purple-200">Пройденных тестов</h3>
+              <p className="text-2xl font-bold text-purple-400">-</p>
             </div>
           </div>
         </div>
@@ -218,14 +226,14 @@ function CourseFormModal({ course, onClose, onSave }: CourseFormModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <h3 className="text-lg font-semibold mb-4">
+      <div className="bg-gray-800 rounded-lg max-w-md w-full p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">
           {course ? 'Редактировать курс' : 'Добавить курс'}
         </h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Название
             </label>
             <input
@@ -233,31 +241,31 @@ function CourseFormModal({ course, onClose, onSave }: CourseFormModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Описание
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Порядок
             </label>
             <input
               type="number"
               value={orderIndex}
               onChange={(e) => setOrderIndex(parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             />
           </div>
 
@@ -272,7 +280,7 @@ function CourseFormModal({ course, onClose, onSave }: CourseFormModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+              className="flex-1 bg-gray-600 text-gray-200 py-2 px-4 rounded-md hover:bg-gray-700"
             >
               Отмена
             </button>

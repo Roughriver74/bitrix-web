@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Test, TestQuestion, Course } from '@/types';
 import Link from 'next/link';
@@ -68,42 +68,42 @@ export default function TestsPage() {
 
   if (loading || testsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-xl text-gray-900 dark:text-gray-100">Загрузка...</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-xl text-white">Загрузка...</div>
       </div>
     );
   }
 
   if (!user || !user.is_admin) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-xl text-red-600 dark:text-red-400">Доступ запрещен</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-xl text-red-400">Доступ запрещен</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-3xl font-bold text-white">
                 Управление тестами
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">Создание и редактирование тестов</p>
+              <p className="text-gray-300">Создание и редактирование тестов</p>
             </div>
             <div className="flex space-x-2">
               <ThemeToggle />
               <button
                 onClick={() => setShowTestForm(true)}
-                className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-800"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Создать тест
               </button>
               <Link 
                 href="/admin" 
-                className="bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-600 dark:hover:bg-gray-700"
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
               >
                 Назад
               </Link>
@@ -112,22 +112,22 @@ export default function TestsPage() {
         </div>
 
         {/* Тесты */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           {tests.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">Нет тестов</p>
+            <p className="text-gray-400">Нет тестов</p>
           ) : (
             <div className="space-y-4">
               {tests.map((test) => (
-                <div key={test.id} className="border dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <div key={test.id} className="border border-gray-600 rounded-lg p-4 hover:bg-gray-700">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         {test.title}
                       </h3>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                      <div className="text-sm text-gray-400 mb-2">
                         ID: {test.id} | Курс: {courses.find(c => c.id === test.course_id)?.title || 'Не найден'}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="text-sm text-gray-300">
                         {test.description && (
                           <p className="mb-2">{test.description}</p>
                         )}
@@ -137,19 +137,19 @@ export default function TestsPage() {
                     <div className="flex space-x-2 ml-4">
                       <button
                         onClick={() => setManagingQuestions(test)}
-                        className="bg-green-500 dark:bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-600 dark:hover:bg-green-700"
+                        className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
                       >
                         Вопросы
                       </button>
                       <button
                         onClick={() => setEditingTest(test)}
-                        className="bg-yellow-500 dark:bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 dark:hover:bg-yellow-700"
+                        className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
                       >
                         Изменить
                       </button>
                       <button
                         onClick={() => handleDeleteTest(test.id)}
-                        className="bg-red-500 dark:bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-600 dark:hover:bg-red-700"
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
                       >
                         Удалить
                       </button>
@@ -236,7 +236,7 @@ function TestFormModal({ test, courses, onClose, onSave }: TestFormModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full">
-        <div className="p-6 border-b dark:border-gray-700">
+        <div className="p-6 border-b border-gray-700">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {test ? 'Редактировать тест' : 'Создать тест'}
@@ -326,16 +326,12 @@ function QuestionsModal({ test, onClose }: QuestionsModalProps) {
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<TestQuestion | null>(null);
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
-
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     try {
       const response = await fetch(`/api/test-questions?testId=${test.id}`);
       if (response.ok) {
         const data = await response.json();
-        setQuestions(data.questions.map((q: any) => ({
+        setQuestions(data.questions.map((q: { id: number; test_id: number; question: string; options: string; correct_answer: number; order_index: number }) => ({
           ...q,
           options: JSON.parse(q.options)
         })));
@@ -345,7 +341,11 @@ function QuestionsModal({ test, onClose }: QuestionsModalProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [test.id]);
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
   const handleDeleteQuestion = async (questionId: number) => {
     if (!confirm('Вы уверены, что хотите удалить этот вопрос?')) {
@@ -368,7 +368,7 @@ function QuestionsModal({ test, onClose }: QuestionsModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b dark:border-gray-700">
+        <div className="p-6 border-b border-gray-700">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Вопросы теста: {test.title}
@@ -531,7 +531,7 @@ function QuestionFormModal({ question, testId, onClose, onSave }: QuestionFormMo
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b dark:border-gray-700">
+        <div className="p-6 border-b border-gray-700">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {question ? 'Редактировать вопрос' : 'Добавить вопрос'}
