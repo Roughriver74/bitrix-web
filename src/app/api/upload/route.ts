@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
 export async function POST(request: NextRequest) {
@@ -45,7 +45,15 @@ export async function POST(request: NextRequest) {
     // Создаем уникальное имя файла
     const timestamp = Date.now();
     const fileName = `${timestamp}_${file.name}`;
-    const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    const filePath = path.join(uploadsDir, fileName);
+
+    // Создаем папку uploads, если она не существует
+    try {
+      await mkdir(uploadsDir, { recursive: true });
+    } catch {
+      // Папка уже существует, игнорируем ошибку
+    }
 
     // Создаем буфер из файла
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -53,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Сохраняем файл
     await writeFile(filePath, buffer);
     
-    const fileUrl = `/uploads/${fileName}`;
+    const fileUrl = `/api/uploads/${fileName}`;
     
     return NextResponse.json({ 
       message: 'Файл успешно загружен',

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import db from '@/lib/database';
+import { sql } from '@vercel/postgres';
 import { Course } from '@/types';
 
 export async function GET() {
   try {
-    const courses = db.prepare('SELECT * FROM courses ORDER BY order_index ASC').all() as Course[];
+    const result = await sql`SELECT * FROM courses ORDER BY created_at ASC`;
+    const courses = result.rows as Course[];
     return NextResponse.json({ courses });
   } catch (error) {
     console.error('Ошибка получения курсов:', error);
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const user = getUserFromToken(token);
+    const user = await getUserFromToken(token);
     
     if (!user || !user.is_admin) {
       return NextResponse.json(
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { title, description, image_url, order_index } = await request.json();
+    const { title, description } = await request.json();
     
     if (!title) {
       return NextResponse.json(
@@ -45,12 +46,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const result = db.prepare(`
-      INSERT INTO courses (title, description, image_url, order_index)
-      VALUES (?, ?, ?, ?)
-    `).run(title, description, image_url, order_index || 0);
+    const result = await sql`
+      INSERT INTO courses (title, description)
+      VALUES (${title}, ${description})
+      RETURNING *
+    `;
     
-    const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(result.lastInsertRowid) as Course;
+    const course = result.rows[0] as Course;
     
     return NextResponse.json({ course });
   } catch (error) {

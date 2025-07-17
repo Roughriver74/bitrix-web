@@ -1,0 +1,9 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#4A90E2"/>
+  <text x="200" y="150" text-anchor="middle" fill="white" font-family="Arial" font-size="20">
+    Тестовое изображение
+  </text>
+  <text x="200" y="180" text-anchor="middle" fill="white" font-family="Arial" font-size="16">
+    для системы Bitrix24
+  </text>
+</svg>

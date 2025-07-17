@@ -1,7 +1,7 @@
 import { compare, hash } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import db from './database';
+import { sql } from '@vercel/postgres';
 import { User } from '@/types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -30,11 +30,11 @@ export function verifyToken(token: string): JwtPayload | null {
   }
 }
 
-export function getUserFromToken(token: string): User | null {
+export async function getUserFromToken(token: string): Promise<User | null> {
   try {
     const decoded = verify(token, JWT_SECRET) as JwtPayload & { userId: number };
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as User;
-    return user;
+    const result = await sql`SELECT * FROM users WHERE id = ${decoded.userId}`;
+    return result.rows[0] as User;
   } catch {
     return null;
   }
@@ -52,19 +52,20 @@ export function getAuthToken(request: NextRequest): string | null {
 }
 
 export async function authenticateUser(email: string, password: string): Promise<User | null> {
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as User & { password_hash: string };
+  const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+  const user = result.rows[0] as User & { password: string };
   
   if (!user) {
     return null;
   }
   
-  const isValid = await verifyPassword(password, user.password_hash);
+  const isValid = await verifyPassword(password, user.password);
   if (!isValid) {
     return null;
   }
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password_hash, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user;
   return userWithoutPassword;
 }
 
@@ -72,13 +73,13 @@ export async function registerUser(email: string, password: string, name: string
   try {
     const passwordHash = await hashPassword(password);
     
-    const result = db.prepare(`
-      INSERT INTO users (email, password_hash, name)
-      VALUES (?, ?, ?)
-    `).run(email, passwordHash, name);
+    const result = await sql`
+      INSERT INTO users (email, password, name)
+      VALUES (${email}, ${passwordHash}, ${name})
+      RETURNING *
+    `;
     
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as User;
-    return user;
+    return result.rows[0] as User;
   } catch {
     return null;
   }

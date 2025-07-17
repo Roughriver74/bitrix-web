@@ -58,8 +58,12 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
           img: ({ src, alt }) => (
             <img
               src={src}
-              alt={alt}
-              className="max-w-full h-auto rounded-lg shadow-sm my-4"
+              alt={alt || ''}
+              className="max-w-full h-auto rounded-lg shadow-sm my-4 mx-auto block"
+              onError={(e) => {
+                console.error('Ошибка загрузки изображения:', src);
+                e.currentTarget.style.display = 'none';
+              }}
             />
           ),
           table: ({ children }) => (
