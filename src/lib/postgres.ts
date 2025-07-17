@@ -83,6 +83,8 @@ export async function createTables() {
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
+        image_url TEXT,
+        order_index INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -130,9 +132,9 @@ export async function createTables() {
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         test_id INTEGER REFERENCES tests(id) ON DELETE CASCADE,
         score INTEGER NOT NULL,
-        total_questions INTEGER NOT NULL,
+        max_score INTEGER NOT NULL,
         answers TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -142,8 +144,10 @@ export async function createTables() {
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
-        lesson_id INTEGER REFERENCES lessons(id) ON DELETE CASCADE,
+        lesson_id INTEGER REFERENCES lessons(id) ON DELETE SET NULL,
         completed BOOLEAN DEFAULT FALSE,
+        score INTEGER,
+        completed_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
