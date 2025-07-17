@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { getTestsByCourse, createTest, getUserFromToken } from '@/lib/postgres';
 import { verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -17,17 +17,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
-    let query = 'SELECT * FROM tests';
-    const params: (string | number)[] = [];
-
+    let tests;
     if (courseId) {
-      query += ' WHERE course_id = ?';
-      params.push(courseId);
+      tests = await getTestsByCourse(parseInt(courseId));
+    } else {
+      // Если не указан courseId, возвращаем пустой массив или все тесты
+      tests = [];
     }
-
-    query += ' ORDER BY created_at DESC';
-
-    const tests = db.prepare(query).all(...params);
     
     return NextResponse.json({ tests });
   } catch (error) {
@@ -48,21 +44,31 @@ export async function POST(request: NextRequest) {
     const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
     // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
+    const user = await getUserFromToken(token);
     if (!user || !user.is_admin) {
-      return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
+      return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 });
     }
 
     const { course_id, lesson_id, title, description } = await request.json();
 
-    const result = db.prepare(`
-      INSERT INTO tests (course_id, lesson_id, title, description)
-      VALUES (?, ?, ?, ?)
-    `).run(course_id, lesson_id, title, description);
+    if (!course_id || !title) {
+      return NextResponse.json(
+        { error: 'Обязательные поля: course_id, title' },
+        { status: 400 }
+      );
+    }
 
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(result.lastInsertRowid);
-    
-    return NextResponse.json({ test });
+    const test = await createTest({
+      course_id: parseInt(course_id),
+      lesson_id: lesson_id ? parseInt(lesson_id) : null,
+      title,
+      description: description || ''
+    });
+
+    return NextResponse.json({ 
+      message: 'Тест создан успешно',
+      test 
+    });
   } catch (error) {
     console.error('Ошибка создания теста:', error);
     return NextResponse.json({ error: 'Ошибка создания теста' }, { status: 500 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import db from '@/lib/database';
+import { getLessonsByCourse, createLesson } from '@/lib/postgres';
 import { Lesson } from '@/types';
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const lessons = db.prepare('SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index ASC').all(courseId) as Lesson[];
+    const lessons = await getLessonsByCourse(parseInt(courseId));
     return NextResponse.json({ lessons });
   } catch (error) {
     console.error('Ошибка получения уроков:', error);
@@ -50,19 +50,22 @@ export async function POST(request: NextRequest) {
     
     if (!course_id || !title || !content) {
       return NextResponse.json(
-        { error: 'ID курса, название и содержание обязательны' },
+        { error: 'Обязательные поля: course_id, title, content' },
         { status: 400 }
       );
     }
     
-    const result = db.prepare(`
-      INSERT INTO lessons (course_id, title, content, order_index)
-      VALUES (?, ?, ?, ?)
-    `).run(course_id, title, content, order_index || 0);
+    const lesson = await createLesson({
+      course_id: parseInt(course_id),
+      title,
+      content,
+      order_index: order_index || 0
+    });
     
-    const lesson = db.prepare('SELECT * FROM lessons WHERE id = ?').get(result.lastInsertRowid) as Lesson;
-    
-    return NextResponse.json({ lesson });
+    return NextResponse.json({ 
+      message: 'Урок создан успешно',
+      lesson 
+    });
   } catch (error) {
     console.error('Ошибка создания урока:', error);
     return NextResponse.json(

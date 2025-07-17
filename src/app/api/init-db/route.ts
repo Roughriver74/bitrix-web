@@ -1,16 +1,27 @@
 import { NextResponse } from 'next/server';
 import { createTables, createDefaultAdmin } from '@/lib/postgres';
+import { seedPostgresDatabase } from '@/lib/seed-postgres';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const loadContent = searchParams.get('loadContent') === 'true';
+    
     // Создаем таблицы
     await createTables();
     
     // Создаем администраторов
     await createDefaultAdmin();
     
+    // Загружаем контент, если указан параметр
+    if (loadContent) {
+      await seedPostgresDatabase();
+    }
+    
     return NextResponse.json({ 
-      message: 'База данных инициализирована успешно',
+      message: loadContent 
+        ? 'База данных инициализирована и контент загружен успешно'
+        : 'База данных инициализирована успешно',
       success: true 
     });
   } catch (error) {
