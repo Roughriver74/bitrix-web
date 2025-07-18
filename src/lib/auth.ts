@@ -1,7 +1,7 @@
 import { compare, hash } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { getUserById, getUserByEmail, User, createUser } from './postgres';
+import { getUserById, getUserByEmail, User, createUser } from './blob-storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 

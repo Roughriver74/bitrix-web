@@ -1,26 +1,32 @@
 import { NextResponse } from 'next/server'
+import { initializeDatabase } from '@/lib/blob-storage'
+import { seedBlobDatabase } from '@/lib/seed-blob'
 import { createTables, createDefaultAdmin } from '@/lib/postgres'
-import { seedPostgresDatabase } from '@/lib/seed-postgres'
 
 export async function POST(request: Request) {
 	try {
-		console.log('Начинаем инициализацию PostgreSQL базы данных...')
+		console.log('Начинаем инициализацию баз данных...')
 
 		const { searchParams } = new URL(request.url)
 		const loadContent = searchParams.get('loadContent') === 'true'
 
-		// Создаем таблицы
-		console.log('Создание таблиц...')
-		await createTables()
+		// Инициализируем Blob storage для пользователей
+		console.log('Инициализация Blob storage...')
+		await initializeDatabase()
 
-		// Создаем администраторов
-		console.log('Создание администраторов...')
-		await createDefaultAdmin()
+		// Создаем таблицы PostgreSQL для контента (курсы, уроки, тесты)
+		try {
+			console.log('Создание таблиц PostgreSQL...')
+			await createTables()
+			await createDefaultAdmin()
+		} catch (pgError) {
+			console.log('PostgreSQL недоступен, пропускаем создание таблиц')
+		}
 
 		// Загружаем контент, если указан параметр
 		if (loadContent) {
 			console.log('Загрузка контента...')
-			await seedPostgresDatabase()
+			await seedBlobDatabase()
 		}
 
 		console.log('База данных успешно инициализирована')

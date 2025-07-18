@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromToken, getTestQuestionById, updateTestQuestion, deleteTestQuestion } from '@/lib/postgres';
+import { getTestQuestionById, updateTestQuestion, deleteTestQuestion } from '@/lib/postgres';
+import { getUserFromToken } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
