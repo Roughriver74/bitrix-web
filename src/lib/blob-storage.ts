@@ -119,23 +119,27 @@ async function getInitialDatabase(): Promise<DatabaseState> {
 // Загрузка данных из Blob
 async function loadDatabase(): Promise<DatabaseState> {
   try {
-    const blobList = await list({ prefix: BLOB_NAME });
+    // Попробуем найти файл по точному имени
+    const blobList = await list();
+    const dbBlob = blobList.blobs.find(blob => blob.pathname === BLOB_NAME);
     
-    if (blobList.blobs.length === 0) {
+    if (!dbBlob) {
       console.log('База данных не найдена, создаем новую');
       return await getInitialDatabase();
     }
 
-    const response = await fetch(blobList.blobs[0].url);
+    console.log('Найден файл базы данных:', dbBlob.url);
+    const response = await fetch(dbBlob.url);
     if (!response.ok) {
       throw new Error('Не удалось загрузить данные');
     }
     
     const data = await response.json();
-    console.log('База данных загружена из Blob');
+    console.log('База данных загружена из Blob, пользователей:', data.users?.length || 0);
     return data;
   } catch (error) {
     console.error('Ошибка загрузки базы данных:', error);
+    console.log('Создаем новую базу данных');
     return await getInitialDatabase();
   }
 }
@@ -143,11 +147,11 @@ async function loadDatabase(): Promise<DatabaseState> {
 // Сохранение данных в Blob
 async function saveDatabase(data: DatabaseState): Promise<void> {
   try {
-    await put(BLOB_NAME, JSON.stringify(data, null, 2), {
+    const blob = await put(BLOB_NAME, JSON.stringify(data, null, 2), {
       access: 'public',
       contentType: 'application/json'
     });
-    console.log('База данных сохранена в Blob');
+    console.log('База данных сохранена в Blob:', blob.url, 'пользователей:', data.users.length);
   } catch (error) {
     console.error('Ошибка сохранения базы данных:', error);
     throw error;
@@ -174,11 +178,20 @@ export async function getUserById(id: number): Promise<User | null> {
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const data = await loadDatabase();
-  return data.users.find(user => user.email === email) || null;
+  console.log('Поиск пользователя по email:', email, 'всего пользователей:', data.users.length);
+  const user = data.users.find(user => user.email === email) || null;
+  console.log('Пользователь найден:', !!user);
+  return user;
 }
 
 export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<User> {
   const data = await loadDatabase();
+  
+  // Проверяем, не существует ли уже пользователь с таким email
+  const existingUser = data.users.find(user => user.email === userData.email);
+  if (existingUser) {
+    throw new Error('Пользователь с таким email уже существует');
+  }
   
   const newUser: User = {
     ...userData,
@@ -186,6 +199,7 @@ export async function createUser(userData: Omit<User, 'id' | 'created_at'>): Pro
     created_at: new Date().toISOString()
   };
   
+  console.log('Создаем нового пользователя:', newUser.email, 'ID:', newUser.id);
   data.users.push(newUser);
   await saveDatabase(data);
   

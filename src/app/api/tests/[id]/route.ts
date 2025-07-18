@@ -33,7 +33,7 @@ export async function PUT(
 ) {
   try {
     const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
-                  request.cookies.get('token')?.value;
+                  request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(
@@ -84,7 +84,7 @@ export async function DELETE(
 ) {
   try {
     const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
-                  request.cookies.get('token')?.value;
+                  request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(

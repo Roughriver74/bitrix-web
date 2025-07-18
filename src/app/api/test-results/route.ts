@@ -7,7 +7,7 @@ import { cookies } from 'next/headers'
 export async function GET(request: NextRequest) {
 	try {
 		const cookieStore = await cookies()
-		const token = cookieStore.get('token')?.value
+		const token = cookieStore.get('auth-token')?.value
 
 		if (!token) {
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	try {
 		const cookieStore = await cookies()
-		const token = cookieStore.get('token')?.value
+		const token = cookieStore.get('auth-token')?.value
 
 		if (!token) {
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
