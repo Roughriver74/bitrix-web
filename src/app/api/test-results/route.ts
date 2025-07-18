@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { createTestResult, getUserFromToken } from '@/lib/postgres';
 import { verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -53,41 +53,28 @@ export async function POST(request: NextRequest) {
     }
 
     const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
-    const { test_id, answers } = await request.json();
+    const { test_id, score, answers, total_questions } = await request.json();
 
-    // Получаем вопросы теста
-    const questions = db.prepare('SELECT * FROM test_questions WHERE test_id = ? ORDER BY order_index').all(test_id) as { id: number; test_id: number; question: string; options: string; correct_answer: number; order_index: number }[];
-    
-    // Подсчитываем баллы
-    let score = 0;
-    const maxScore = questions.length;
-    
-    questions.forEach((question, index) => {
-      if (answers[index] === question.correct_answer) {
-        score++;
-      }
-    });
-
-    // Сохраняем результат
-    const result = db.prepare(`
-      INSERT INTO test_results (user_id, test_id, score, max_score, answers)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(decoded.userId, test_id, score, maxScore, JSON.stringify(answers));
-
-    // Обновляем прогресс пользователя
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(test_id) as { id: number; course_id: number; lesson_id?: number; title: string; description?: string; created_at: string } | undefined;
-    if (test) {
-      db.prepare(`
-        INSERT OR REPLACE INTO user_progress (user_id, course_id, lesson_id, completed, score, completed_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now'))
-      `).run(decoded.userId, test.course_id, test.lesson_id, 1, score);
+    if (!test_id || score === undefined || !answers || !total_questions) {
+      return NextResponse.json({
+        error: 'Обязательные поля: test_id, score, answers, total_questions'
+      }, { status: 400 });
     }
 
-    const testResult = db.prepare('SELECT * FROM test_results WHERE id = ?').get(result.lastInsertRowid);
-    
-    return NextResponse.json({ result: testResult, score, maxScore });
+    const result = await createTestResult({
+      user_id: decoded.userId,
+      test_id: parseInt(test_id),
+      score: parseInt(score),
+      total_questions: parseInt(total_questions),
+      answers: JSON.stringify(answers)
+    });
+
+    return NextResponse.json({ 
+      message: 'Результат теста сохранен успешно',
+      result 
+    });
   } catch (error) {
-    console.error('Ошибка сохранения результата:', error);
-    return NextResponse.json({ error: 'Ошибка сохранения результата' }, { status: 500 });
+    console.error('Ошибка сохранения результата теста:', error);
+    return NextResponse.json({ error: 'Ошибка сохранения результата теста' }, { status: 500 });
   }
 }

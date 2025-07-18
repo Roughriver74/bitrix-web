@@ -1,71 +1,125 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
-import { verify } from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { getUserFromToken, getTestQuestionById, updateTestQuestion, deleteTestQuestion } from '@/lib/postgres';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
-    }
-
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
-    
-    // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
-    if (!user || !user.is_admin) {
-      return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
-    }
-
     const { id } = await params;
-    const { question, options, correct_answer, order_index } = await request.json();
-
-    db.prepare(`
-      UPDATE test_questions 
-      SET question = ?, options = ?, correct_answer = ?, order_index = ?
-      WHERE id = ?
-    `).run(question, JSON.stringify(options), correct_answer, order_index, id);
-
-    const questionData = db.prepare('SELECT * FROM test_questions WHERE id = ?').get(id);
+    const question = await getTestQuestionById(parseInt(id));
     
-    return NextResponse.json({ question: questionData });
+    if (!question) {
+      return NextResponse.json(
+        { error: 'Вопрос не найден' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ question });
   } catch (error) {
-    console.error('Ошибка обновления вопроса:', error);
-    return NextResponse.json({ error: 'Ошибка обновления вопроса' }, { status: 500 });
+    console.error('Ошибка получения вопроса:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
+                  request.cookies.get('token')?.value;
+    
     if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Не авторизован' },
+        { status: 401 }
+      );
     }
-
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
-    // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
+    const user = await getUserFromToken(token);
     if (!user || !user.is_admin) {
-      return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Недостаточно прав' },
+        { status: 403 }
+      );
     }
-
-    const { id } = await params;
-
-    db.prepare('DELETE FROM test_questions WHERE id = ?').run(id);
     
-    return NextResponse.json({ success: true });
+    const { id } = await params;
+    const { question, options, correct_answer, order_index } = await request.json();
+    
+    const updatedQuestion = await updateTestQuestion(parseInt(id), {
+      question,
+      options,
+      correct_answer,
+      order_index
+    });
+    
+    if (!updatedQuestion) {
+      return NextResponse.json(
+        { error: 'Вопрос не найден' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ 
+      message: 'Вопрос обновлен успешно',
+      question: updatedQuestion 
+    });
+  } catch (error) {
+    console.error('Ошибка обновления вопроса:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
+                  request.cookies.get('token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Не авторизован' },
+        { status: 401 }
+      );
+    }
+    
+    const user = await getUserFromToken(token);
+    if (!user || !user.is_admin) {
+      return NextResponse.json(
+        { error: 'Недостаточно прав' },
+        { status: 403 }
+      );
+    }
+    
+    const { id } = await params;
+    const success = await deleteTestQuestion(parseInt(id));
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Вопрос не найден' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ 
+      message: 'Вопрос удален успешно' 
+    });
   } catch (error) {
     console.error('Ошибка удаления вопроса:', error);
-    return NextResponse.json({ error: 'Ошибка удаления вопроса' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
   }
 }

@@ -1,106 +1,123 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
-import { verify } from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { getTestById, updateTest, deleteTest, getUserFromToken } from '@/lib/postgres';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
-    }
-
-    verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     const { id } = await params;
-    
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(id);
+    const test = await getTestById(parseInt(id));
     
     if (!test) {
-      return NextResponse.json({ error: 'Тест не найден' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Тест не найден' },
+        { status: 404 }
+      );
     }
-
-    // Получаем вопросы теста
-    const questions = db.prepare('SELECT * FROM test_questions WHERE test_id = ? ORDER BY order_index').all(id);
-    
-    return NextResponse.json({ test, questions });
-  } catch (error) {
-    console.error('Ошибка загрузки теста:', error);
-    return NextResponse.json({ error: 'Ошибка загрузки теста' }, { status: 500 });
-  }
-}
-
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
-    }
-
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
-    
-    // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
-    if (!user || !user.is_admin) {
-      return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
-    }
-
-    const { id } = await params;
-    const { title, description } = await request.json();
-
-    db.prepare(`
-      UPDATE tests 
-      SET title = ?, description = ?
-      WHERE id = ?
-    `).run(title, description, id);
-
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(id);
     
     return NextResponse.json({ test });
   } catch (error) {
-    console.error('Ошибка обновления теста:', error);
-    return NextResponse.json({ error: 'Ошибка обновления теста' }, { status: 500 });
+    console.error('Ошибка получения теста:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
+                  request.cookies.get('token')?.value;
+    
     if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Не авторизован' },
+        { status: 401 }
+      );
     }
-
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
-    // Проверяем, что пользователь админ
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId) as { id: number; email: string; name: string; is_admin: boolean } | undefined;
+    const user = await getUserFromToken(token);
     if (!user || !user.is_admin) {
-      return NextResponse.json({ error: 'Нет прав доступа' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Недостаточно прав' },
+        { status: 403 }
+      );
     }
-
+    
     const { id } = await params;
+    const { title, description } = await request.json();
+    
+    const updatedTest = await updateTest(parseInt(id), {
+      title,
+      description
+    });
+    
+    if (!updatedTest) {
+      return NextResponse.json(
+        { error: 'Тест не найден' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ 
+      message: 'Тест обновлен успешно',
+      test: updatedTest 
+    });
+  } catch (error) {
+    console.error('Ошибка обновления теста:', error);
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
+  }
+}
 
-    // Удаляем вопросы теста
-    db.prepare('DELETE FROM test_questions WHERE test_id = ?').run(id);
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
+                  request.cookies.get('token')?.value;
     
-    // Удаляем результаты теста
-    db.prepare('DELETE FROM test_results WHERE test_id = ?').run(id);
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Не авторизован' },
+        { status: 401 }
+      );
+    }
     
-    // Удаляем сам тест
-    db.prepare('DELETE FROM tests WHERE id = ?').run(id);
+    const user = await getUserFromToken(token);
+    if (!user || !user.is_admin) {
+      return NextResponse.json(
+        { error: 'Недостаточно прав' },
+        { status: 403 }
+      );
+    }
     
-    return NextResponse.json({ success: true });
+    const { id } = await params;
+    const success = await deleteTest(parseInt(id));
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Тест не найден' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ 
+      message: 'Тест удален успешно' 
+    });
   } catch (error) {
     console.error('Ошибка удаления теста:', error);
-    return NextResponse.json({ error: 'Ошибка удаления теста' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    );
   }
 }

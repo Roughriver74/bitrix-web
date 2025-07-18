@@ -1,8 +1,7 @@
 import { compare, hash } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { sql } from '@vercel/postgres';
-import { User } from '@/types';
+import { getUserById, getUserByEmail, User } from './blob-storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -33,9 +32,28 @@ export function verifyToken(token: string): JwtPayload | null {
 export async function getUserFromToken(token: string): Promise<User | null> {
   try {
     const decoded = verify(token, JWT_SECRET) as JwtPayload & { userId: number };
-    const result = await sql`SELECT * FROM users WHERE id = ${decoded.userId}`;
-    return result.rows[0] as User;
+    return await getUserById(decoded.userId);
   } catch {
+    return null;
+  }
+}
+
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
+  try {
+    const user = await getUserByEmail(email);
+    
+    if (!user) {
+      return null;
+    }
+    
+    const isValidPassword = await verifyPassword(password, user.password);
+    if (!isValidPassword) {
+      return null;
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('Ошибка аутентификации пользователя:', error);
     return null;
   }
 }

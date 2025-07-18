@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
-import db from '@/lib/database'
-import { Lesson } from '@/types'
+import { getLessonById, updateLesson, deleteLesson } from '@/lib/postgres'
 
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const resolvedParams = await params
-		const lessonId = parseInt(resolvedParams.id)
-
-		const lesson = db
-			.prepare('SELECT * FROM lessons WHERE id = ?')
-			.get(lessonId) as Lesson
+		const { id } = await params
+		const lesson = await getLessonById(parseInt(id))
 
 		if (!lesson) {
 			return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
@@ -40,36 +35,29 @@ export async function PUT(
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 		}
 
-		const user = await getUserFromToken(token)
+		const user = getUserFromToken(token)
 
 		if (!user || !user.is_admin) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
-		const resolvedParams = await params
-		const lessonId = parseInt(resolvedParams.id)
+		const { id } = await params
 		const { title, content, order_index } = await request.json()
 
-		if (!title || !content) {
-			return NextResponse.json(
-				{ error: 'Название и содержание обязательны' },
-				{ status: 400 }
-			)
+		const lesson = await updateLesson(parseInt(id), {
+			title,
+			content,
+			order_index,
+		})
+
+		if (!lesson) {
+			return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
 		}
 
-		db.prepare(
-			`
-      UPDATE lessons 
-      SET title = ?, content = ?, order_index = ?
-      WHERE id = ?
-    `
-		).run(title, content, order_index, lessonId)
-
-		const lesson = db
-			.prepare('SELECT * FROM lessons WHERE id = ?')
-			.get(lessonId) as Lesson
-
-		return NextResponse.json({ lesson })
+		return NextResponse.json({
+			message: 'Урок обновлен успешно',
+			lesson,
+		})
 	} catch (error) {
 		console.error('Ошибка обновления урока:', error)
 		return NextResponse.json(
@@ -90,18 +78,22 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 		}
 
-		const user = await getUserFromToken(token)
+		const user = getUserFromToken(token)
 
 		if (!user || !user.is_admin) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
-		const resolvedParams = await params
-		const lessonId = parseInt(resolvedParams.id)
+		const { id } = await params
+		const success = await deleteLesson(parseInt(id))
 
-		db.prepare('DELETE FROM lessons WHERE id = ?').run(lessonId)
+		if (!success) {
+			return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
+		}
 
-		return NextResponse.json({ message: 'Урок удален' })
+		return NextResponse.json({
+			message: 'Урок удален успешно',
+		})
 	} catch (error) {
 		console.error('Ошибка удаления урока:', error)
 		return NextResponse.json(
