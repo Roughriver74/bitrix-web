@@ -35,7 +35,7 @@ export async function PUT(
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 		}
 
-		const user = getUserFromToken(token)
+		const user = await getUserFromToken(token)
 
 		if (!user || !user.is_admin) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
@@ -78,7 +78,7 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 		}
 
-		const user = getUserFromToken(token)
+		const user = await getUserFromToken(token)
 
 		if (!user || !user.is_admin) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })

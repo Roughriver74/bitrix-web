@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
-    let tests;
+    let tests: any[];
     if (courseId) {
       tests = await getTestsByCourse(parseInt(courseId));
     } else {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
+    verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
     // Проверяем, что пользователь админ
     const user = await getUserFromToken(token);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { initializeDatabase, checkBlobConnection } from '@/lib/blob-storage'
+import { initializeDatabase } from '@/lib/blob-storage'
 import { seedBlobDatabase } from '@/lib/seed-blob'
 import { checkBlobConnection as checkBlobEnv } from '@/lib/postgres-check'
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
-import db from '@/lib/database'
+import { sql } from '@vercel/postgres'
 import { Course } from '@/types'
 
 export async function GET(
@@ -11,14 +11,15 @@ export async function GET(
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
 
-		const course = db
-			.prepare('SELECT * FROM courses WHERE id = ?')
-			.get(courseId) as Course
+		const result = await sql`
+			SELECT * FROM courses WHERE id = ${courseId}
+		`
 
-		if (!course) {
+		if (result.rows.length === 0) {
 			return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
 		}
 
+		const course = result.rows[0] as Course
 		return NextResponse.json({ course })
 	} catch (error) {
 		console.error('Ошибка получения курса:', error)
@@ -48,7 +49,7 @@ export async function PUT(
 
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
-		const { title, description, image_url, order_index } = await request.json()
+		const { title, description, order_index } = await request.json()
 
 		if (!title) {
 			return NextResponse.json(
@@ -57,18 +58,18 @@ export async function PUT(
 			)
 		}
 
-		db.prepare(
-			`
-      UPDATE courses 
-      SET title = ?, description = ?, image_url = ?, order_index = ?
-      WHERE id = ?
-    `
-		).run(title, description, image_url, order_index, courseId)
+		const result = await sql`
+			UPDATE courses 
+			SET title = ${title}, description = ${description}, order_index = ${order_index}
+			WHERE id = ${courseId}
+			RETURNING *
+		`
 
-		const course = db
-			.prepare('SELECT * FROM courses WHERE id = ?')
-			.get(courseId) as Course
+		if (result.rows.length === 0) {
+			return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
+		}
 
+		const course = result.rows[0] as Course
 		return NextResponse.json({ course })
 	} catch (error) {
 		console.error('Ошибка обновления курса:', error)
@@ -99,7 +100,13 @@ export async function DELETE(
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
 
-		db.prepare('DELETE FROM courses WHERE id = ?').run(courseId)
+		const result = await sql`
+			DELETE FROM courses WHERE id = ${courseId}
+		`
+
+		if ((result.rowCount || 0) === 0) {
+			return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
+		}
 
 		return NextResponse.json({ message: 'Курс удален' })
 	} catch (error) {

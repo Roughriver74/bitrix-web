@@ -1,7 +1,7 @@
 import { compare, hash } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { getUserById, getUserByEmail, User } from './blob-storage';
+import { getUserById, getUserByEmail, User, createUser } from './blob-storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -69,36 +69,20 @@ export function getAuthToken(request: NextRequest): string | null {
   return token?.value || null;
 }
 
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
-  const result = await sql`SELECT * FROM users WHERE email = ${email}`;
-  const user = result.rows[0] as User & { password: string };
-  
-  if (!user) {
-    return null;
-  }
-  
-  const isValid = await verifyPassword(password, user.password);
-  if (!isValid) {
-    return null;
-  }
-  
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...userWithoutPassword } = user;
-  return userWithoutPassword;
-}
-
 export async function registerUser(email: string, password: string, name: string): Promise<User | null> {
   try {
     const passwordHash = await hashPassword(password);
     
-    const result = await sql`
-      INSERT INTO users (email, password, name)
-      VALUES (${email}, ${passwordHash}, ${name})
-      RETURNING *
-    `;
+    const user = await createUser({
+      email,
+      password: passwordHash,
+      name,
+      is_admin: false
+    });
     
-    return result.rows[0] as User;
-  } catch {
+    return user;
+  } catch (error) {
+    console.error('Ошибка регистрации пользователя:', error);
     return null;
   }
 }

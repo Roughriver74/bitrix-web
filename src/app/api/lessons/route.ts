@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
 import { getLessonsByCourse, createLesson } from '@/lib/postgres';
-import { Lesson } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const user = getUserFromToken(token);
+    const user = await getUserFromToken(token);
     
     if (!user || !user.is_admin) {
       return NextResponse.json(

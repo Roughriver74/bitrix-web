@@ -268,7 +268,7 @@ export async function deleteLesson(lessonId: number): Promise<boolean> {
     const result = await sql`
       DELETE FROM lessons WHERE id = ${lessonId}
     `;
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   } catch (error) {
     console.error('Ошибка удаления урока:', error);
     throw error;
@@ -351,7 +351,7 @@ export async function deleteTest(testId: number): Promise<boolean> {
     const result = await sql`
       DELETE FROM tests WHERE id = ${testId}
     `;
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   } catch (error) {
     console.error('Ошибка удаления теста:', error);
     throw error;
@@ -485,7 +485,7 @@ export async function deleteTestQuestion(questionId: number): Promise<boolean> {
     const result = await sql`
       DELETE FROM test_questions WHERE id = ${questionId}
     `;
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   } catch (error) {
     console.error('Ошибка удаления вопроса теста:', error);
     throw error;

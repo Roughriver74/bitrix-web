@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTestQuestions, createTestQuestion, getUserFromToken } from '@/lib/postgres';
-import { verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
