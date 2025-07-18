@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthToken, getUserFromToken } from '@/lib/auth';
-import { sql } from '@vercel/postgres';
-import { Course } from '@/types';
+import { getAllCourses, createCourse } from '@/lib/blob-storage';
 
 export async function GET() {
   try {
-    const result = await sql`SELECT * FROM courses ORDER BY created_at ASC`;
-    const courses = result.rows as Course[];
+    const courses = await getAllCourses();
     return NextResponse.json({ courses });
   } catch (error) {
     console.error('Ошибка получения курсов:', error);
@@ -46,13 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const result = await sql`
-      INSERT INTO courses (title, description)
-      VALUES (${title}, ${description})
-      RETURNING *
-    `;
-    
-    const course = result.rows[0] as Course;
+    const course = await createCourse({
+      title,
+      description: description || '',
+      order_index: 0
+    });
     
     return NextResponse.json({ course });
   } catch (error) {

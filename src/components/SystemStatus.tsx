@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 interface SystemStatus {
   status: 'healthy' | 'error';
   message: string;
-  postgres: boolean;
+  blob: boolean;
+  blobConnected: boolean;
   environment: string;
   timestamp: string;
   missingVars: string[];
@@ -29,7 +30,8 @@ export default function SystemStatus() {
       setStatus({
         status: 'error',
         message: 'Не удалось получить статус системы',
-        postgres: false,
+        blob: false,
+        blobConnected: false,
         environment: 'unknown',
         timestamp: new Date().toISOString(),
         missingVars: []
@@ -81,7 +83,7 @@ export default function SystemStatus() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
             <div>
-              <strong>PostgreSQL:</strong> {status.postgres ? '✅ Подключен' : '❌ Не настроен'}
+              <strong>Vercel Blob:</strong> {status.blob && status.blobConnected ? '✅ Подключен' : '❌ Не настроен'}
             </div>
             <div>
               <strong>Окружение:</strong> {status.environment}
@@ -97,7 +99,7 @@ export default function SystemStatus() {
                 ))}
               </ul>
               <p className="mt-2 text-sm text-yellow-700">
-                Добавьте эти переменные в настройки Vercel (Settings → Environment Variables)
+                Добавьте переменную BLOB_READ_WRITE_TOKEN в настройки Vercel (Settings → Environment Variables)
               </p>
             </div>
           )}

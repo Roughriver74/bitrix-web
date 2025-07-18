@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createTables, createDefaultAdmin } from '@/lib/postgres';
-import { seedPostgresDatabase } from '@/lib/seed-postgres';
-import { checkPostgresConnection } from '@/lib/postgres-check';
+import { initializeDatabase, checkBlobConnection } from '@/lib/blob-storage';
+import { seedBlobDatabase } from '@/lib/seed-blob';
+import { checkBlobConnection as checkBlobEnv } from '@/lib/postgres-check';
 
 export async function POST(request: Request) {
   try {
-    // Проверяем подключение к PostgreSQL
-    if (!checkPostgresConnection()) {
+    // Проверяем подключение к Blob
+    if (!checkBlobEnv()) {
       return NextResponse.json({
-        error: 'PostgreSQL не настроен',
-        message: 'Отсутствуют переменные окружения для подключения к PostgreSQL',
-        requiredVars: ['POSTGRES_URL', 'POSTGRES_PRISMA_URL', 'POSTGRES_URL_NON_POOLING'],
+        error: 'Vercel Blob не настроен',
+        message: 'Отсутствует переменная окружения BLOB_READ_WRITE_TOKEN',
+        requiredVars: ['BLOB_READ_WRITE_TOKEN', 'JWT_SECRET'],
         success: false
       }, { status: 503 });
     }
@@ -18,15 +18,12 @@ export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const loadContent = searchParams.get('loadContent') === 'true';
     
-    // Создаем таблицы
-    await createTables();
-    
-    // Создаем администраторов
-    await createDefaultAdmin();
+    // Инициализируем базу данных
+    await initializeDatabase();
     
     // Загружаем контент, если указан параметр
     if (loadContent) {
-      await seedPostgresDatabase();
+      await seedBlobDatabase();
     }
     
     return NextResponse.json({ 

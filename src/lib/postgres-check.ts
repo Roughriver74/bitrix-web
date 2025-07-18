@@ -1,13 +1,11 @@
-// Проверка доступности PostgreSQL и fallback для локальной разработки
+// Проверка доступности Vercel Blob
 
-export function checkPostgresConnection(): boolean {
+export function checkBlobConnection(): boolean {
   const requiredVars = [
-    'POSTGRES_URL',
-    'POSTGRES_PRISMA_URL', 
-    'POSTGRES_URL_NON_POOLING'
+    'BLOB_READ_WRITE_TOKEN'
   ];
   
-  // Проверяем, есть ли хотя бы одна переменная для подключения к PostgreSQL
+  // Проверяем, есть ли переменная для подключения к Blob
   const hasConnection = requiredVars.some(varName => {
     const value = process.env[varName];
     return value && value.length > 0;
@@ -17,16 +15,14 @@ export function checkPostgresConnection(): boolean {
 }
 
 export function getConnectionStatus(): {
-  hasPostgres: boolean;
+  hasBlob: boolean;
   message: string;
   requiredVars: string[];
 } {
-  const hasPostgres = checkPostgresConnection();
+  const hasBlob = checkBlobConnection();
   
   const requiredVars = [
-    'POSTGRES_URL',
-    'POSTGRES_PRISMA_URL', 
-    'POSTGRES_URL_NON_POOLING',
+    'BLOB_READ_WRITE_TOKEN',
     'JWT_SECRET'
   ];
   
@@ -36,8 +32,8 @@ export function getConnectionStatus(): {
   });
   
   let message = '';
-  if (!hasPostgres) {
-    message = `Отсутствуют переменные окружения для PostgreSQL: ${missingVars.join(', ')}`;
+  if (!hasBlob) {
+    message = `Отсутствуют переменные окружения для Vercel Blob: ${missingVars.join(', ')}`;
   } else if (missingVars.length > 0) {
     message = `Отсутствуют переменные окружения: ${missingVars.join(', ')}`;
   } else {
@@ -45,7 +41,7 @@ export function getConnectionStatus(): {
   }
   
   return {
-    hasPostgres,
+    hasBlob,
     message,
     requiredVars
   };
