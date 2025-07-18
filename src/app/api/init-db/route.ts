@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createTables, createDefaultAdmin } from '@/lib/postgres';
 import { seedPostgresDatabase } from '@/lib/seed-postgres';
+import { checkPostgresConnection } from '@/lib/postgres-check';
 
 export async function POST(request: Request) {
   try {
+    // Проверяем подключение к PostgreSQL
+    if (!checkPostgresConnection()) {
+      return NextResponse.json({
+        error: 'PostgreSQL не настроен',
+        message: 'Отсутствуют переменные окружения для подключения к PostgreSQL',
+        requiredVars: ['POSTGRES_URL', 'POSTGRES_PRISMA_URL', 'POSTGRES_URL_NON_POOLING'],
+        success: false
+      }, { status: 503 });
+    }
+
     const { searchParams } = new URL(request.url);
     const loadContent = searchParams.get('loadContent') === 'true';
     

@@ -40,6 +40,27 @@ export async function getUserFromToken(token: string): Promise<User | null> {
   }
 }
 
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
+  try {
+    const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+    const user = result.rows[0] as User;
+    
+    if (!user) {
+      return null;
+    }
+    
+    const isValidPassword = await verifyPassword(password, user.password);
+    if (!isValidPassword) {
+      return null;
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('Ошибка аутентификации пользователя:', error);
+    return null;
+  }
+}
+
 export function getAuthToken(request: NextRequest): string | null {
   const authHeader = request.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {

@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Курсы Битрикс24 - Обучающая платформа
 
-## Getting Started
+Комплексное веб-приложение для изучения Битрикс24 с курсами, тестами и системой управления контентом.
 
-First, run the development server:
+## 🚨 ВАЖНО: Настройка переменных окружения
+
+**❌ Если вы видите ошибку "missing_connection_string"** - это означает, что переменные окружения не настроены.
+
+### Обязательные переменные окружения для Vercel:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# PostgreSQL подключение (получите в Vercel Storage)
+POSTGRES_URL=postgresql://username:password@host:port/database
+POSTGRES_PRISMA_URL=postgresql://username:password@host:port/database?pgbouncer=true&connect_timeout=15
+POSTGRES_URL_NON_POOLING=postgresql://username:password@host:port/database
+
+# Дополнительные PostgreSQL переменные
+POSTGRES_USER=username
+POSTGRES_HOST=host
+POSTGRES_PASSWORD=password
+POSTGRES_DATABASE=database
+
+# JWT секрет (придумайте надежный ключ)
+JWT_SECRET=your-very-secure-secret-key-here-min-32-chars
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Как настроить в Vercel:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Создайте PostgreSQL базу данных:**
+   - Откройте [Vercel Dashboard](https://vercel.com/dashboard)
+   - Выберите ваш проект
+   - Перейдите в **Storage** → **Create Database**
+   - Выберите **Postgres**
+   - Скопируйте все предоставленные переменные
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Добавьте переменные окружения:**
+   - Перейдите в **Settings** → **Environment Variables**
+   - Добавьте все переменные из списка выше
+   - **Важно:** Добавьте свой собственный `JWT_SECRET`
 
-## Learn More
+3. **Перезапустите деплойМЕНТ:**
+   - Перейдите в **Deployments**
+   - Нажмите на три точки рядом с последним деплоем
+   - Выберите **Redeploy**
 
-To learn more about Next.js, take a look at the following resources:
+4. **Инициализируйте базу данных:**
+   ```bash
+   curl -X POST "https://ваш-домен.vercel.app/api/init-db?loadContent=true"
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Быстрый старт
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Локальная разработка
 
-## Deploy on Vercel
+1. Клонируйте репозиторий:
+   ```bash
+   git clone <your-repo-url>
+   cd bitrix24-courses
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Настройте переменные окружения (создайте `.env.local`):
+   ```bash
+   # Для локальной разработки можете использовать эти значения
+   POSTGRES_URL=your_postgres_url_here
+   JWT_SECRET=your-secret-key-for-development
+   ```
+
+4. Запустите сервер разработки:
+   ```bash
+   npm run dev
+   ```
+
+5. Откройте [http://localhost:3001](http://localhost:3001) в браузере
+
+## 📚 Возможности
+
+### ✅ Готовые курсы:
+- **Основы работы с Битрикс24**
+- **Продвинутая автоматизация Битрикс24**
+- **Интеграции и API Битрикс24**
+- **Аналитика и BI в Битрикс24**
+
+### ✅ Функциональность:
+- 🎓 Интерактивные уроки с markdown
+- 📝 Система тестирования знаний
+- 👨‍💼 Административная панель
+- 📊 Отслеживание прогресса
+- 🔐 Система авторизации
+- 📱 Адаптивный дизайн
+
+### ✅ Техническая реализация:
+- Next.js 15 с App Router
+- PostgreSQL база данных
+- TypeScript
+- Tailwind CSS
+- Vercel деплой
+
+## 👥 Данные для входа
+
+После инициализации базы данных доступны следующие аккаунты:
+
+**Основной администратор:**
+- Email: `roughriver74@gmail.com`
+- Пароль: `bitrix2024`
+
+**Дополнительный администратор:**
+- Email: `admin@bitrix24course.ru`
+- Пароль: `admin123`
+
+## 🛠 API Маршруты
+
+### Аутентификация:
+- `POST /api/auth/login` - Вход в систему
+- `GET /api/auth/me` - Информация о пользователе
+
+### Курсы и контент:
+- `GET /api/courses` - Список курсов
+- `GET /api/courses/[id]` - Конкретный курс
+- `GET /api/lessons` - Уроки курса
+- `GET /api/lessons/[id]` - Конкретный урок
+
+### Тестирование:
+- `GET /api/tests` - Тесты курса
+- `GET /api/test-questions` - Вопросы теста
+- `POST /api/test-results` - Сохранение результатов
+
+### Система:
+- `POST /api/init-db` - Инициализация БД
+- `GET /api/health` - Статус системы
+
+## 🔧 Устранение проблем
+
+### Ошибка "missing_connection_string":
+1. Проверьте переменные окружения в Vercel
+2. Убедитесь, что PostgreSQL база создана
+3. Перезапустите деплоймент
+
+### База данных не инициализируется:
+1. Проверьте переменную `JWT_SECRET`
+2. Выполните `POST /api/init-db?loadContent=true`
+3. Проверьте логи в Vercel Dashboard
+
+### Не отображается контент:
+1. Убедитесь, что инициализация прошла успешно
+2. Проверьте статус через `/api/health`
+3. Войдите как администратор для проверки
+
+## 📖 Документация
+
+Подробные инструкции находятся в файлах:
+- `DEPLOYMENT_GUIDE.md` - Полное руководство по деплою
+- `CHANGES_SUMMARY.md` - Сводка изменений
+
+## 🤝 Поддержка
+
+При возникновении проблем:
+1. Проверьте статус системы на главной странице
+2. Просмотрите логи в Vercel Dashboard
+3. Убедитесь, что все переменные окружения настроены
+
+---
+
+**Платформа готова к использованию после настройки переменных окружения и инициализации базы данных!**
