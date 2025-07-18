@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import AuthForm from "@/components/AuthForm";
-import SystemStatus from "@/components/SystemStatus";
 import { useState, useEffect } from "react";
 
 export default function HomePage() {
@@ -83,12 +82,7 @@ export default function HomePage() {
 						<p className='text-xl text-gray-300 max-w-2xl mx-auto mb-8'>
 							Комплексный курс для персонала по изучению основ системы Битрикс24
 						</p>
-						
-						{/* Статус системы */}
-						<div className="max-w-4xl mx-auto mb-8">
-							<SystemStatus />
-						</div>
-						
+
 						<div className='space-x-4'>
 							<button
 								onClick={() => setShowAuth(true)}
@@ -150,11 +144,7 @@ export default function HomePage() {
 					<p className='text-xl text-gray-300 max-w-2xl mx-auto mb-8'>
 						Комплексный курс для персонала по изучению основ системы Битрикс24
 					</p>
-					
-					{/* Статус системы для авторизованных пользователей */}
-					<div className="max-w-4xl mx-auto mb-8">
-						<SystemStatus />
-					</div>
+
 				</header>
 
 				<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12'>

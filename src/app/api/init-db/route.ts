@@ -1,33 +1,29 @@
 import { NextResponse } from 'next/server'
-import { initializeDatabase } from '@/lib/blob-storage'
-import { seedBlobDatabase } from '@/lib/seed-blob'
-import { checkBlobConnection as checkBlobEnv } from '@/lib/postgres-check'
+import { createTables, createDefaultAdmin } from '@/lib/postgres'
+import { seedPostgresDatabase } from '@/lib/seed-postgres'
 
 export async function POST(request: Request) {
 	try {
-		// Проверяем подключение к Blob
-		if (!checkBlobEnv()) {
-			return NextResponse.json(
-				{
-					error: 'Vercel Blob не настроен',
-					message: 'Отсутствует переменная окружения BLOB_READ_WRITE_TOKEN',
-					requiredVars: ['BLOB_READ_WRITE_TOKEN', 'JWT_SECRET'],
-					success: false,
-				},
-				{ status: 503 }
-			)
-		}
+		console.log('Начинаем инициализацию PostgreSQL базы данных...')
 
 		const { searchParams } = new URL(request.url)
 		const loadContent = searchParams.get('loadContent') === 'true'
 
-		// Инициализируем базу данных
-		await initializeDatabase()
+		// Создаем таблицы
+		console.log('Создание таблиц...')
+		await createTables()
+
+		// Создаем администраторов
+		console.log('Создание администраторов...')
+		await createDefaultAdmin()
 
 		// Загружаем контент, если указан параметр
 		if (loadContent) {
-			await seedBlobDatabase()
+			console.log('Загрузка контента...')
+			await seedPostgresDatabase()
 		}
+
+		console.log('База данных успешно инициализирована')
 
 		return NextResponse.json({
 			message: loadContent
@@ -37,10 +33,22 @@ export async function POST(request: Request) {
 		})
 	} catch (error) {
 		console.error('Ошибка инициализации базы данных:', error)
+
+		// Проверяем, не является ли ошибка дублированием (таблицы уже существуют)
+		const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+		if (errorMessage.includes('already exists') || errorMessage.includes('duplicate key')) {
+			console.log('База данных уже инициализирована')
+			return NextResponse.json({
+				message: 'База данных уже инициализирована',
+				success: true,
+			})
+		}
+
 		return NextResponse.json(
 			{
 				error: 'Ошибка инициализации базы данных',
-				details: error instanceof Error ? error.message : 'Unknown error',
+				details: errorMessage,
 				success: false,
 			},
 			{ status: 500 }

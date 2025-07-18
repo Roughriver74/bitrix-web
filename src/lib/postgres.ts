@@ -492,17 +492,57 @@ export async function deleteTestQuestion(questionId: number): Promise<boolean> {
   }
 }
 
+// Функции для работы с пользователями
+export async function getUserById(userId: number): Promise<User | null> {
+  try {
+    const result = await sql`
+      SELECT * FROM users WHERE id = ${userId}
+    `;
+    return result.rows[0] as User || null;
+  } catch (error) {
+    console.error('Ошибка получения пользователя по ID:', error);
+    return null;
+  }
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    const result = await sql`
+      SELECT * FROM users WHERE email = ${email}
+    `;
+    return result.rows[0] as User || null;
+  } catch (error) {
+    console.error('Ошибка получения пользователя по email:', error);
+    return null;
+  }
+}
+
+export async function createUser(userData: {
+  email: string;
+  password: string;
+  name: string;
+  is_admin: boolean;
+}): Promise<User | null> {
+  try {
+    const result = await sql`
+      INSERT INTO users (email, password, name, is_admin)
+      VALUES (${userData.email}, ${userData.password}, ${userData.name}, ${userData.is_admin})
+      RETURNING *
+    `;
+    return result.rows[0] as User;
+  } catch (error) {
+    console.error('Ошибка создания пользователя:', error);
+    return null;
+  }
+}
+
 // Функция для получения пользователя из токена (для совместимости)
 export async function getUserFromToken(token: string): Promise<User | null> {
   try {
     const jwt = await import('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
     
-    const result = await sql`
-      SELECT * FROM users WHERE id = ${decoded.userId}
-    `;
-    
-    return result.rows[0] as User || null;
+    return await getUserById(decoded.userId);
   } catch (error) {
     console.error('Ошибка получения пользователя из токена:', error);
     return null;
