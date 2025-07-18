@@ -262,10 +262,11 @@ CRM (Customer Relationship Management) — система управления �
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const courseId = parseInt(params.id)
+		const resolvedParams = await params
+		const courseId = parseInt(resolvedParams.id)
 
 		// Пытаемся получить курс из PostgreSQL
 		try {
@@ -327,7 +328,7 @@ export async function GET(
 
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const token = getAuthToken(request)
@@ -342,7 +343,8 @@ export async function PUT(
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
-		const courseId = parseInt(params.id)
+		const resolvedParams = await params
+		const courseId = parseInt(resolvedParams.id)
 		const { title, description } = await request.json()
 
 		// Пытаемся обновить в PostgreSQL
@@ -383,7 +385,7 @@ export async function PUT(
 
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const token = getAuthToken(request)
@@ -398,7 +400,8 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
-		const courseId = parseInt(params.id)
+		const resolvedParams = await params
+		const courseId = parseInt(resolvedParams.id)
 
 		// Пытаемся удалить из PostgreSQL
 		try {
