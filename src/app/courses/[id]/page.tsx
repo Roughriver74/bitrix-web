@@ -12,6 +12,7 @@ interface Course {
 	description: string
 	order_index: number
 	created_at: string
+	lessons?: Lesson[]
 }
 
 interface Lesson {
@@ -32,32 +33,30 @@ export default function CoursePage() {
 	const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
 	const [loadingContent, setLoadingContent] = useState(true)
 
-	const fetchCourse = useCallback(async () => {
+	const fetchCourseWithLessons = useCallback(async () => {
 		if (!courseId) return
 		try {
 			const response = await fetch(`/api/courses/${courseId}`)
 			if (response.ok) {
 				const data = await response.json()
-				setCourse(data)
+				setCourse(data.course)
+
+				// Проверяем, есть ли уроки в ответе
+				if (data.course.lessons && data.course.lessons.length > 0) {
+					const sortedLessons = data.course.lessons.sort(
+						(a: Lesson, b: Lesson) => a.order_index - b.order_index
+					)
+					setLessons(sortedLessons)
+					setCurrentLesson(sortedLessons[0])
+				} else {
+					setLessons([])
+					setCurrentLesson(null)
+				}
+			} else {
+				console.error('Ошибка загрузки курса:', response.status)
 			}
 		} catch (error) {
 			console.error('Ошибка загрузки курса:', error)
-		}
-	}, [courseId])
-
-	const fetchLessons = useCallback(async () => {
-		if (!courseId) return
-		try {
-			const response = await fetch(`/api/courses/${courseId}/lessons`)
-			if (response.ok) {
-				const data = await response.json()
-				setLessons(data)
-				if (data.length > 0) {
-					setCurrentLesson(data[0])
-				}
-			}
-		} catch (error) {
-			console.error('Ошибка загрузки уроков:', error)
 		} finally {
 			setLoadingContent(false)
 		}
@@ -65,10 +64,9 @@ export default function CoursePage() {
 
 	useEffect(() => {
 		if (user && courseId) {
-			fetchCourse()
-			fetchLessons()
+			fetchCourseWithLessons()
 		}
-	}, [user, courseId, fetchCourse, fetchLessons])
+	}, [user, courseId, fetchCourseWithLessons])
 
 	if (loading || loadingContent) {
 		return (
@@ -125,27 +123,33 @@ export default function CoursePage() {
 							</h2>
 							<p className='text-gray-300 mb-6 text-sm'>{course.description}</p>
 
-							<div className='space-y-3'>
-								<h3 className='font-semibold text-white mb-3'>Уроки:</h3>
-								{lessons.map(lesson => (
-									<button
-										key={lesson.id}
-										onClick={() => setCurrentLesson(lesson)}
-										className={`w-full text-left p-3 rounded-lg transition-colors ${
-											currentLesson?.id === lesson.id
-												? 'bg-blue-900 text-blue-200 border-l-4 border-blue-400'
-												: 'hover:bg-gray-700 text-gray-300'
-										}`}
-									>
-										<div className='font-medium'>{lesson.title}</div>
-										<div className='text-sm text-gray-400'>
-											Урок {lesson.order_index}
-										</div>
-									</button>
-								))}
-							</div>
+							{lessons.length > 0 ? (
+								<div className='space-y-3'>
+									<h3 className='font-semibold text-white mb-3'>Уроки:</h3>
+									{lessons.map(lesson => (
+										<button
+											key={lesson.id}
+											onClick={() => setCurrentLesson(lesson)}
+											className={`w-full text-left p-3 rounded-lg transition-colors ${
+												currentLesson?.id === lesson.id
+													? 'bg-blue-900 text-blue-200 border-l-4 border-blue-400'
+													: 'hover:bg-gray-700 text-gray-300'
+											}`}
+										>
+											<div className='font-medium'>{lesson.title}</div>
+											<div className='text-sm text-gray-400'>
+												Урок {lesson.order_index}
+											</div>
+										</button>
+									))}
+								</div>
+							) : (
+								<div className='text-center text-gray-400'>
+									<p>Уроки скоро будут добавлены</p>
+								</div>
+							)}
 
-							<div className='mt-8 pt-6 border-t'>
+							<div className='mt-8 pt-6 border-t border-gray-700'>
 								<Link
 									href={`/courses/${courseId}/test`}
 									className='w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-center block'
@@ -172,7 +176,7 @@ export default function CoursePage() {
 
 									<MarkdownRenderer content={currentLesson.content} />
 
-									<div className='mt-8 pt-6 border-t flex justify-between items-center'>
+									<div className='mt-8 pt-6 border-t border-gray-700 flex justify-between items-center'>
 										<div className='flex space-x-4'>
 											{lessons.findIndex(l => l.id === currentLesson.id) >
 												0 && (
@@ -213,11 +217,25 @@ export default function CoursePage() {
 							) : (
 								<div className='p-8 text-center'>
 									<h2 className='text-2xl font-bold text-white mb-4'>
-										Уроки не найдены
+										{lessons.length === 0
+											? 'Уроки скоро будут добавлены'
+											: 'Выберите урок'}
 									</h2>
 									<p className='text-gray-300'>
-										Для этого курса пока нет доступных уроков
+										{lessons.length === 0
+											? 'Мы работаем над добавлением уроков для этого курса. Пока вы можете пройти тест.'
+											: 'Выберите урок из списка слева для начала обучения'}
 									</p>
+									{lessons.length === 0 && (
+										<div className='mt-6'>
+											<Link
+												href={`/courses/${courseId}/test`}
+												className='inline-block bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors'
+											>
+												Пройти тест по курсу
+											</Link>
+										</div>
+									)}
 								</div>
 							)}
 						</div>

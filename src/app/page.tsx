@@ -1,12 +1,12 @@
 'use client'
 
-import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
-import AuthForm from "@/components/AuthForm";
-import { useState, useEffect } from "react";
+import Link from 'next/link'
+import { useAuth } from '@/hooks/useAuth'
+import AuthForm from '@/components/AuthForm'
+import { useState, useEffect } from 'react'
 
 export default function HomePage() {
-	const { user, loading, logout } = useAuth()
+	const { user, loading, logout, checkAuth } = useAuth()
 	const [isInitializing, setIsInitializing] = useState(false)
 	const [initError, setInitError] = useState<string | null>(null)
 	const [showAuth, setShowAuth] = useState(false)
@@ -41,6 +41,13 @@ export default function HomePage() {
 
 		initializeDatabase()
 	}, [user, loading])
+
+	// Функция для обработки успешного логина
+	const handleAuthSuccess = async () => {
+		setShowAuth(false)
+		// Обновляем состояние пользователя
+		await checkAuth()
+	}
 
 	if (loading || isInitializing) {
 		return (
@@ -107,7 +114,7 @@ export default function HomePage() {
 					>
 						← Назад
 					</button>
-					<AuthForm onSuccess={() => setShowAuth(false)} />
+					<AuthForm onSuccess={handleAuthSuccess} />
 				</div>
 			</div>
 		)
@@ -144,7 +151,6 @@ export default function HomePage() {
 					<p className='text-xl text-gray-300 max-w-2xl mx-auto mb-8'>
 						Комплексный курс для персонала по изучению основ системы Битрикс24
 					</p>
-
 				</header>
 
 				<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12'>
