@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server'
 import { User } from '@/types'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
-import { getUserByEmail, createUser, getUserById } from './blob-storage'
+import { getUserByEmail as getBlobUserByEmail, createUser as createBlobUser, getUserById as getBlobUserById } from './blob-storage'
+import { getUserByEmail as getLocalUserByEmail, createUser as createLocalUser, getUserById as getLocalUserById } from './local-storage'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-demo'
 
@@ -67,11 +68,20 @@ export async function getUserByEmailWithFallback(
 ): Promise<User | null> {
 	try {
 		// Пытаемся получить из Blob storage
-		return await getUserByEmail(email)
+		if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+			return await getBlobUserByEmail(email)
+		}
 	} catch (error) {
-		console.log('Blob storage недоступен, используем локальные данные')
+		console.log('Blob storage недоступен, используем локальную базу данных')
+	}
 
-		// Fallback к локальным данным
+	try {
+		// Пытаемся получить из локальной базы данных
+		return await getLocalUserByEmail(email)
+	} catch (localError) {
+		console.log('Локальная база данных недоступна, используем статические данные')
+		
+		// Fallback к статическим данным
 		const user = localUsers.find(u => u.email === email)
 		return user || null
 	}
@@ -83,11 +93,20 @@ export async function getUserByIdWithFallback(
 ): Promise<User | null> {
 	try {
 		// Пытаемся получить из Blob storage
-		return await getUserById(id)
+		if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+			return await getBlobUserById(id)
+		}
 	} catch (error) {
-		console.log('Blob storage недоступен, используем локальные данные')
+		console.log('Blob storage недоступен, используем локальную базу данных')
+	}
 
-		// Fallback к локальным данным
+	try {
+		// Пытаемся получить из локальной базы данных
+		return await getLocalUserById(id)
+	} catch (localError) {
+		console.log('Локальная база данных недоступна, используем статические данные')
+		
+		// Fallback к статическим данным
 		const user = localUsers.find(u => u.id === id)
 		return user || null
 	}
@@ -99,10 +118,19 @@ export async function createUserWithFallback(
 ): Promise<User> {
 	try {
 		// Пытаемся создать в Blob storage
-		return await createUser(userData)
+		if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+			return await createBlobUser(userData)
+		}
 	} catch (error) {
+		console.log('Blob storage недоступен, используем локальную базу данных')
+	}
+
+	try {
+		// Пытаемся создать в локальной базе данных
+		return await createLocalUser(userData)
+	} catch (localError) {
 		console.log(
-			'Blob storage недоступен, создание пользователя недоступно в demo режиме'
+			'Локальная база данных недоступна, создание пользователя недоступно в demo режиме'
 		)
 		throw new Error('Регистрация недоступна в demo режиме')
 	}

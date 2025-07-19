@@ -176,10 +176,10 @@ export default function AdminPage() {
 						<div className='text-gray-400'>Загрузка статуса...</div>
 					) : dataStatus ? (
 						<div className='space-y-4'>
-							<div className='grid grid-cols-1 gap-4'>
+							<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 								<div
 									className={`p-4 rounded-lg ${
-										dataStatus.blob.available ? 'bg-blue-900' : 'bg-red-900'
+										dataStatus.blob?.available ? 'bg-blue-900' : 'bg-red-900'
 									}`}
 								>
 									<h3 className='text-lg font-medium text-white mb-2'>
@@ -187,14 +187,34 @@ export default function AdminPage() {
 									</h3>
 									<p
 										className={`text-sm ${
-											dataStatus.blob.available
+											dataStatus.blob?.available
 												? 'text-blue-200'
 												: 'text-red-200'
 										}`}
 									>
-										{dataStatus.blob.available
+										{dataStatus.blob?.available
 											? `✅ Доступен • ${dataStatus.blob.courses} курсов`
-											: `❌ Недоступен • ${dataStatus.blob.error}`}
+											: `❌ Недоступен • ${dataStatus.blob?.error}`}
+									</p>
+								</div>
+								<div
+									className={`p-4 rounded-lg ${
+										dataStatus.local?.available ? 'bg-green-900' : 'bg-red-900'
+									}`}
+								>
+									<h3 className='text-lg font-medium text-white mb-2'>
+										📦 Локальная База Данных
+									</h3>
+									<p
+										className={`text-sm ${
+											dataStatus.local?.available
+												? 'text-green-200'
+												: 'text-red-200'
+										}`}
+									>
+										{dataStatus.local?.available
+											? `✅ Доступна • ${dataStatus.local.courses} курсов`
+											: `❌ Недоступна • ${dataStatus.local?.error}`}
 									</p>
 								</div>
 							</div>

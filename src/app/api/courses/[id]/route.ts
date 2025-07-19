@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
-import { getCourseById, updateCourse, deleteCourse } from '@/lib/blob-storage'
+import { getCourseById as getBlobCourse, updateCourse as updateBlobCourse, deleteCourse as deleteBlobCourse } from '@/lib/blob-storage'
+import { getCourseById as getLocalCourse, updateCourse as updateLocalCourse, deleteCourse as deleteLocalCourse, getLessonsByCourse } from '@/lib/local-storage'
 
 // Статические данные курсов с уроками
 const staticCoursesData = {
@@ -269,13 +270,29 @@ export async function GET(
 
 		// Пытаемся получить курс из Blob storage
 		try {
-			const course = await getCourseById(courseId)
-			if (course) {
-				console.log(`Получен курс ${courseId} из Blob storage`)
-				return NextResponse.json({ course })
+			if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+				const course = await getBlobCourse(courseId)
+				if (course) {
+					console.log(`Получен курс ${courseId} из Blob storage`)
+					return NextResponse.json({ course })
+				}
 			}
 		} catch (blobError) {
-			console.log('Blob storage недоступен, используем статические данные')
+			console.log('Blob storage недоступен, используем локальную базу данных')
+		}
+
+		// Fallback к локальной базе данных
+		try {
+			const course = await getLocalCourse(courseId)
+			if (course) {
+				// Добавляем уроки к курсу
+				const lessons = await getLessonsByCourse(courseId)
+				const courseWithLessons = { ...course, lessons }
+				console.log(`Используем локальный курс ${courseId}`)
+				return NextResponse.json({ course: courseWithLessons })
+			}
+		} catch (localError) {
+			console.log('Локальная база данных недоступна, используем статические данные')
 		}
 
 		// Fallback к статическим данным
@@ -319,9 +336,23 @@ export async function PUT(
 
 		// Пытаемся обновить в Blob storage
 		try {
-			const course = await updateCourse(courseId, { title, description })
-			return NextResponse.json({ course })
+			if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+				const course = await updateBlobCourse(courseId, { title, description })
+				if (course) {
+					return NextResponse.json({ course })
+				}
+			}
 		} catch (blobError) {
+			console.log('Blob storage недоступен, используем локальную базу данных')
+		}
+
+		// Fallback к локальной базе данных
+		try {
+			const course = await updateLocalCourse(courseId, { title, description })
+			if (course) {
+				return NextResponse.json({ course })
+			}
+		} catch (localError) {
 			return NextResponse.json(
 				{ error: 'Базы данных недоступны для обновления курса' },
 				{ status: 503 }
@@ -360,9 +391,23 @@ export async function DELETE(
 
 		// Пытаемся удалить из Blob storage
 		try {
-			await deleteCourse(courseId)
-			return NextResponse.json({ message: 'Курс удален' })
+			if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+				const deleted = await deleteBlobCourse(courseId)
+				if (deleted) {
+					return NextResponse.json({ message: 'Курс удален' })
+				}
+			}
 		} catch (blobError) {
+			console.log('Blob storage недоступен, используем локальную базу данных')
+		}
+
+		// Fallback к локальной базе данных
+		try {
+			const deleted = await deleteLocalCourse(courseId)
+			if (deleted) {
+				return NextResponse.json({ message: 'Курс удален' })
+			}
+		} catch (localError) {
 			return NextResponse.json(
 				{ error: 'Базы данных недоступны для удаления курса' },
 				{ status: 503 }

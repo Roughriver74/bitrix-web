@@ -1,63 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
-import { getAllCourses, createCourse } from '@/lib/blob-storage'
-
-// Статические курсы для локальной разработки
-const staticCourses = [
-	{
-		id: 1,
-		title: 'Основы работы с Битрикс24',
-		description:
-			'Изучение базовых возможностей платформы: CRM, задачи, проекты',
-		order_index: 1,
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: 2,
-		title: 'CRM и управление клиентами',
-		description: 'Работа с лидами, сделками, контактами и компаниями',
-		order_index: 2,
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: 3,
-		title: 'Задачи и проекты',
-		description: 'Планирование работы, создание задач и управление проектами',
-		order_index: 3,
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: 4,
-		title: 'Автоматизация и роботы',
-		description: 'Настройка автоматических процессов и бизнес-процессов',
-		order_index: 4,
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: 5,
-		title: 'Отчеты и аналитика',
-		description: 'Создание отчетов и анализ данных в Битрикс24',
-		order_index: 5,
-		created_at: new Date().toISOString(),
-	},
-]
+import { getAllCourses as getBlobCourses, createCourse as createBlobCourse } from '@/lib/blob-storage'
+import { getAllCourses as getLocalCourses, createCourse as createLocalCourse } from '@/lib/local-storage'
 
 export async function GET() {
 	try {
 		// Пытаемся получить из Blob storage
 		try {
-			const courses = await getAllCourses()
-			if (courses.length > 0) {
-				console.log(`Получено ${courses.length} курсов из Blob storage`)
-				return NextResponse.json({ courses })
+			if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+				const courses = await getBlobCourses()
+				if (courses.length > 0) {
+					console.log(`Получено ${courses.length} курсов из Blob storage`)
+					return NextResponse.json({ courses })
+				}
 			}
 		} catch (blobError) {
-			console.log('Blob storage недоступен, используем статические данные')
+			console.log('Blob storage недоступен, используем локальную базу данных')
 		}
 
-		// Fallback к статическим данным
-		console.log(`Используем статические курсы для локальной разработки`)
-		return NextResponse.json({ courses: staticCourses })
+		// Fallback к локальной базе данных
+		console.log(`Используем локальную базу данных`)
+		const courses = await getLocalCourses()
+		return NextResponse.json({ courses })
 	} catch (error) {
 		console.error('Ошибка получения курсов:', error)
 		return NextResponse.json(
@@ -79,7 +43,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
-		const { title, description } = await request.json()
+		const { title, description, order_index } = await request.json()
 
 		if (!title || !description) {
 			return NextResponse.json(
@@ -89,20 +53,27 @@ export async function POST(request: NextRequest) {
 		}
 
 		try {
-			const newCourse = await createCourse({
-				title,
-				description,
-				order_index: Date.now(), // Простой способ генерации порядка
-			})
-
-			return NextResponse.json({ course: newCourse }, { status: 201 })
+			// Пытаемся создать в Blob storage
+			if (process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== 'blob_fake_token_for_development') {
+				const newCourse = await createBlobCourse({
+					title,
+					description,
+					order_index: order_index || Date.now(),
+				})
+				return NextResponse.json({ course: newCourse }, { status: 201 })
+			}
 		} catch (blobError) {
-			console.log('Blob storage недоступен')
-			return NextResponse.json(
-				{ error: 'База данных недоступна' },
-				{ status: 503 }
-			)
+			console.log('Blob storage недоступен, используем локальную базу данных')
 		}
+
+		// Fallback к локальной базе данных
+		const newCourse = await createLocalCourse({
+			title,
+			description,
+			order_index: order_index || Date.now(),
+		})
+
+		return NextResponse.json({ course: newCourse }, { status: 201 })
 	} catch (error) {
 		console.error('Ошибка создания курса:', error)
 		return NextResponse.json(
