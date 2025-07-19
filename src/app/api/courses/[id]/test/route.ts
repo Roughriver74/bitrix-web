@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
-import { sql } from '@vercel/postgres'
+import { getCourseById } from '@/lib/blob-storage'
 
 // Статические тесты для курсов
 const staticTestsData = {
@@ -280,30 +280,18 @@ export async function GET(
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
 
-		// Пытаемся получить тест из PostgreSQL
+		// Пытаемся получить тест из Blob Storage
 		try {
-			const testResult = await sql`
-        SELECT t.*, array_agg(
-          json_build_object(
-            'id', tq.id,
-            'question', tq.question,
-            'options', tq.options::json,
-            'correct_answer', tq.correct_answer
-          ) ORDER BY tq.order_index
-        ) as questions
-        FROM tests t
-        LEFT JOIN test_questions tq ON t.id = tq.test_id
-        WHERE t.course_id = ${courseId}
-        GROUP BY t.id
-      `
-
-			if (testResult.rows.length > 0) {
-				const test = testResult.rows[0]
-				console.log(`Получен тест для курса ${courseId} из PostgreSQL`)
-				return NextResponse.json({ test })
+			const course = await getCourseById(courseId)
+			if (course) {
+				const test = course.test
+				if (test) {
+					console.log(`Получен тест для курса ${courseId} из Blob Storage`)
+					return NextResponse.json({ test })
+				}
 			}
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, используем статические данные')
+		} catch (blobStorageError) {
+			console.log('Blob Storage недоступен, используем статические данные')
 		}
 
 		// Fallback к статическим данным

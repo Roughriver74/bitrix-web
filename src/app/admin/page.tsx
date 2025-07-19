@@ -67,31 +67,30 @@ export default function AdminPage() {
 		}
 	}
 
-	const handleMigrateData = async (
-		target: 'blob' | 'postgres' | 'all' = 'all'
-	) => {
+	const handleMigrateData = async () => {
 		if (
 			!confirm(
-				`Вы уверены, что хотите мигрировать данные в ${
-					target === 'all' ? 'обе базы данных' : target
-				}? Это может занять некоторое время.`
+				'Вы уверены, что хотите мигрировать данные в Blob Storage? Это может занять некоторое время.'
 			)
 		) {
 			return
 		}
 
 		setMigrationLoading(true)
-		setMigrationStatus('Запуск миграции...')
+		setMigrationStatus('Запуск миграции в Blob Storage...')
 
 		try {
-			const response = await fetch(`/api/migrate-data?target=${target}`, {
+			const response = await fetch('/api/migrate-data?force=true', {
 				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem('token')}`,
+				},
 			})
 
 			const data = await response.json()
 
 			if (response.ok && data.success) {
-				setMigrationStatus('✅ Миграция завершена успешно!')
+				setMigrationStatus('✅ Миграция в Blob Storage завершена успешно!')
 				// Перезагружаем курсы и статус данных после миграции
 				await fetchCourses()
 				await fetchDataStatus()
@@ -175,7 +174,7 @@ export default function AdminPage() {
 						<div className='text-gray-400'>Загрузка статуса...</div>
 					) : dataStatus ? (
 						<div className='space-y-4'>
-							<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+							<div className='grid grid-cols-1 gap-4'>
 								<div
 									className={`p-4 rounded-lg ${
 										dataStatus.blob.available ? 'bg-blue-900' : 'bg-red-900'
@@ -194,29 +193,6 @@ export default function AdminPage() {
 										{dataStatus.blob.available
 											? `✅ Доступен • ${dataStatus.blob.courses} курсов`
 											: `❌ Недоступен • ${dataStatus.blob.error}`}
-									</p>
-								</div>
-
-								<div
-									className={`p-4 rounded-lg ${
-										dataStatus.postgres.available
-											? 'bg-green-900'
-											: 'bg-red-900'
-									}`}
-								>
-									<h3 className='text-lg font-medium text-white mb-2'>
-										🟢 PostgreSQL
-									</h3>
-									<p
-										className={`text-sm ${
-											dataStatus.postgres.available
-												? 'text-green-200'
-												: 'text-red-200'
-										}`}
-									>
-										{dataStatus.postgres.available
-											? `✅ Доступен • ${dataStatus.postgres.courses} курсов`
-											: `❌ Недоступен • ${dataStatus.postgres.error}`}
 									</p>
 								</div>
 							</div>
@@ -246,32 +222,17 @@ export default function AdminPage() {
 					<h2 className='text-2xl font-semibold text-white mb-4'>
 						Миграция данных
 					</h2>
-					<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+					<div className='flex justify-center'>
 						<button
-							onClick={() => handleMigrateData('blob')}
+							onClick={handleMigrateData}
 							disabled={migrationLoading}
-							className='bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed'
+							className='bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed'
 						>
 							{migrationLoading ? 'Миграция...' : 'Загрузить в Blob Storage'}
 						</button>
-						<button
-							onClick={() => handleMigrateData('postgres')}
-							disabled={migrationLoading}
-							className='bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed'
-						>
-							{migrationLoading ? 'Миграция...' : 'Загрузить в PostgreSQL'}
-						</button>
-						<button
-							onClick={() => handleMigrateData('all')}
-							disabled={migrationLoading}
-							className='bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed'
-						>
-							{migrationLoading ? 'Миграция...' : 'Загрузить во всё'}
-						</button>
 					</div>
-					<p className='text-gray-400 text-sm mt-3'>
-						Загружает курсы, уроки и тесты в выбранные базы данных. Используйте
-						при пустой базе или проблемах с данными.
+					<p className='text-gray-400 text-sm mt-3 text-center'>
+						Загружает курсы, уроки и тесты в Blob Storage. Используйте при пустой базе или проблемах с данными.
 					</p>
 				</div>
 

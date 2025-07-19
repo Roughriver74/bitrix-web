@@ -17,6 +17,8 @@ export interface Course {
   description: string;
   order_index: number;
   created_at: string;
+  lessons?: Lesson[];
+  test?: Test & { questions?: TestQuestion[] };
 }
 
 export interface Lesson {

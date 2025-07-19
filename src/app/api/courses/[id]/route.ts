@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
 import { getCourseById, updateCourse, deleteCourse } from '@/lib/blob-storage'
-import { sql } from '@vercel/postgres'
 
 // Статические данные курсов с уроками
 const staticCoursesData = {
@@ -268,36 +267,7 @@ export async function GET(
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
 
-		// Пытаемся получить курс из PostgreSQL
-		try {
-			const courseResult = await sql`
-        SELECT id, title, description, order_index, created_at 
-        FROM courses 
-        WHERE id = ${courseId}
-      `
-
-			if (courseResult.rows.length > 0) {
-				const course = courseResult.rows[0]
-
-				// Получаем уроки курса
-				const lessonsResult = await sql`
-          SELECT id, course_id, title, content, order_index, created_at 
-          FROM lessons 
-          WHERE course_id = ${courseId}
-          ORDER BY order_index ASC
-        `
-
-				course.lessons = lessonsResult.rows
-				console.log(
-					`Получен курс ${courseId} из PostgreSQL с ${lessonsResult.rows.length} уроками`
-				)
-				return NextResponse.json({ course })
-			}
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, пробуем Blob storage')
-		}
-
-		// Пытаемся получить из Blob storage
+		// Пытаемся получить курс из Blob storage
 		try {
 			const course = await getCourseById(courseId)
 			if (course) {
@@ -347,30 +317,15 @@ export async function PUT(
 		const courseId = parseInt(resolvedParams.id)
 		const { title, description } = await request.json()
 
-		// Пытаемся обновить в PostgreSQL
+		// Пытаемся обновить в Blob storage
 		try {
-			const result = await sql`
-        UPDATE courses 
-        SET title = ${title}, description = ${description}
-        WHERE id = ${courseId}
-        RETURNING id, title, description, order_index, created_at
-      `
-
-			if (result.rows.length > 0) {
-				return NextResponse.json({ course: result.rows[0] })
-			}
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, обновляем в Blob storage')
-
-			try {
-				const course = await updateCourse(courseId, { title, description })
-				return NextResponse.json({ course })
-			} catch (blobError) {
-				return NextResponse.json(
-					{ error: 'Базы данных недоступны для обновления курса' },
-					{ status: 503 }
-				)
-			}
+			const course = await updateCourse(courseId, { title, description })
+			return NextResponse.json({ course })
+		} catch (blobError) {
+			return NextResponse.json(
+				{ error: 'Базы данных недоступны для обновления курса' },
+				{ status: 503 }
+			)
 		}
 
 		return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
@@ -403,28 +358,15 @@ export async function DELETE(
 		const resolvedParams = await params
 		const courseId = parseInt(resolvedParams.id)
 
-		// Пытаемся удалить из PostgreSQL
+		// Пытаемся удалить из Blob storage
 		try {
-			const result = await sql`
-        DELETE FROM courses WHERE id = ${courseId}
-        RETURNING id
-      `
-
-			if (result.rows.length > 0) {
-				return NextResponse.json({ message: 'Курс удален' })
-			}
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, удаляем из Blob storage')
-
-			try {
-				await deleteCourse(courseId)
-				return NextResponse.json({ message: 'Курс удален' })
-			} catch (blobError) {
-				return NextResponse.json(
-					{ error: 'Базы данных недоступны для удаления курса' },
-					{ status: 503 }
-				)
-			}
+			await deleteCourse(courseId)
+			return NextResponse.json({ message: 'Курс удален' })
+		} catch (blobError) {
+			return NextResponse.json(
+				{ error: 'Базы данных недоступны для удаления курса' },
+				{ status: 503 }
+			)
 		}
 
 		return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
