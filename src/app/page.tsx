@@ -121,82 +121,82 @@ export default function HomePage() {
 	}
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'>
-			<div className='container mx-auto px-4 py-8'>
-				<nav className='flex justify-between items-center mb-8'>
-					<div className='text-lg font-semibold text-white'>
+			<div className='container mx-auto px-4 py-6 md:py-8'>
+				<nav className='flex flex-col space-y-3 md:flex-row md:justify-between md:items-center md:space-y-0 mb-6 md:mb-8'>
+					<div className='text-base md:text-lg font-semibold text-white break-words'>
 						Добро пожаловать, {user?.name}!
 					</div>
-					<div className='flex items-center space-x-4'>
+					<div className='flex flex-wrap gap-2 md:items-center md:space-x-4'>
 						{user?.is_admin && (
 							<Link
 								href='/admin'
-								className='bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors'
+								className='bg-green-600 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-green-700 transition-colors flex-1 md:flex-none text-center'
 							>
 								Админ панель
 							</Link>
 						)}
 						<button
 							onClick={logout}
-							className='bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors'
+							className='bg-red-600 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-red-700 transition-colors flex-1 md:flex-none'
 						>
 							Выйти
 						</button>
 					</div>
 				</nav>
 
-				<header className='text-center mb-12'>
-					<h1 className='text-4xl font-bold text-white mb-4'>
+				<header className='text-center mb-8 md:mb-12'>
+					<h1 className='text-2xl md:text-4xl font-bold text-white mb-3 md:mb-4'>
 						Курс по обучению основам Битрикс24
 					</h1>
-					<p className='text-xl text-gray-300 max-w-2xl mx-auto mb-8'>
+					<p className='text-base md:text-xl text-gray-300 max-w-2xl mx-auto mb-6 md:mb-8 px-2'>
 						Комплексный курс для персонала по изучению основ системы Битрикс24
 					</p>
 				</header>
 
-				<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12'>
-					<div className='bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow'>
-						<div className='text-blue-500 text-4xl mb-4'>📚</div>
-						<h2 className='text-2xl font-semibold text-white mb-3'>
+				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-12'>
+					<div className='bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow'>
+						<div className='text-blue-500 text-3xl md:text-4xl mb-3 md:mb-4'>📚</div>
+						<h2 className='text-xl md:text-2xl font-semibold text-white mb-2 md:mb-3'>
 							Модули курса
 						</h2>
-						<p className='text-gray-300 mb-4'>
+						<p className='text-gray-300 text-sm md:text-base mb-3 md:mb-4'>
 							Структурированные уроки по всем аспектам Битрикс24
 						</p>
 						<Link
 							href='/modules'
-							className='inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors'
+							className='inline-block bg-blue-500 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-blue-600 transition-colors w-full md:w-auto text-center'
 						>
 							Начать обучение
 						</Link>
 					</div>
 
-					<div className='bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow'>
-						<div className='text-green-500 text-4xl mb-4'>🎯</div>
-						<h2 className='text-2xl font-semibold text-white mb-3'>
+					<div className='bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow'>
+						<div className='text-green-500 text-3xl md:text-4xl mb-3 md:mb-4'>🎯</div>
+						<h2 className='text-xl md:text-2xl font-semibold text-white mb-2 md:mb-3'>
 							Практические задания
 						</h2>
-						<p className='text-gray-300 mb-4'>
+						<p className='text-gray-300 text-sm md:text-base mb-3 md:mb-4'>
 							Упражнения для закрепления полученных знаний
 						</p>
 						<Link
 							href='/exercises'
-							className='inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors'
+							className='inline-block bg-green-500 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-green-600 transition-colors w-full md:w-auto text-center'
 						>
 							Выполнить задания
 						</Link>
 					</div>
 
-					<div className='bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow'>
-						<div className='text-purple-500 text-4xl mb-4'>📋</div>
-						<h2 className='text-2xl font-semibold text-white mb-3'>
+					<div className='bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow'>
+						<div className='text-purple-500 text-3xl md:text-4xl mb-3 md:mb-4'>📋</div>
+						<h2 className='text-xl md:text-2xl font-semibold text-white mb-2 md:mb-3'>
 							Оценка знаний
 						</h2>
-						<p className='text-gray-300 mb-4'>
+						<p className='text-gray-300 text-sm md:text-base mb-3 md:mb-4'>
 							Тестирование и проверка усвоенного материала
 						</p>
 						<Link
 							href='/assessment'
-							className='inline-block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors'
+							className='inline-block bg-purple-500 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-purple-600 transition-colors w-full md:w-auto text-center'
 						>
 							Пройти тест
 						</Link>

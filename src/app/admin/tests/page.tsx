@@ -85,25 +85,19 @@ export default function TestsPage() {
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-2xl md:text-3xl font-bold text-white">
                 Управление тестами
               </h1>
-              <p className="text-gray-300">Создание и редактирование тестов</p>
+              <p className="text-gray-300 text-sm md:text-base">Создание и редактирование тестов</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2 md:space-x-2">
               <ThemeToggle />
-              <button
-                onClick={() => setShowTestForm(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Создать тест
-              </button>
               <Link 
                 href="/admin" 
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                className="bg-gray-600 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-gray-700 flex-1 md:flex-none text-center"
               >
                 Назад
               </Link>
@@ -111,48 +105,49 @@ export default function TestsPage() {
           </div>
         </div>
 
+        {/* Информация */}
+        <div className="bg-blue-900/20 border border-blue-500 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+          <div className="flex items-start space-x-3">
+            <div className="text-blue-400 mt-0.5">ℹ️</div>
+            <div>
+              <h3 className="text-blue-200 font-medium text-sm md:text-base">Режим просмотра</h3>
+              <p className="text-blue-300 text-xs md:text-sm mt-1">
+                Тесты загружаются автоматически из blob storage. Создание и редактирование тестов через интерфейс пока не поддерживается.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Тесты */}
-        <div className="bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-4 md:p-6">
           {tests.length === 0 ? (
             <p className="text-gray-400">Нет тестов</p>
           ) : (
             <div className="space-y-4">
               {tests.map((test) => (
-                <div key={test.id} className="border border-gray-600 rounded-lg p-4 hover:bg-gray-700">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                <div key={test.id} className="border border-gray-600 rounded-lg p-3 md:p-4 hover:bg-gray-700">
+                  <div className="flex flex-col space-y-3 md:flex-row md:justify-between md:items-start md:space-y-0">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base md:text-lg font-semibold text-white mb-2 break-words">
                         {test.title}
                       </h3>
-                      <div className="text-sm text-gray-400 mb-2">
-                        ID: {test.id} | Курс: {courses.find(c => c.id === test.course_id)?.title || 'Не найден'}
+                      <div className="text-xs md:text-sm text-gray-400 mb-2 flex flex-wrap gap-2">
+                        <span>ID: {test.id}</span>
+                        <span>Курс: {(test as any).course_title || 'Не найден'}</span>
                       </div>
-                      <div className="text-sm text-gray-300">
+                      <div className="text-xs md:text-sm text-gray-300">
                         {test.description && (
-                          <p className="mb-2">{test.description}</p>
+                          <p className="mb-2 break-words">{test.description}</p>
                         )}
-                        Создан: {new Date(test.created_at).toLocaleDateString()}
+                        <span className="hidden md:inline">
+                          Создан: {new Date(test.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex space-x-2 ml-4">
-                      <button
-                        onClick={() => setManagingQuestions(test)}
-                        className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                      >
-                        Вопросы
-                      </button>
-                      <button
-                        onClick={() => setEditingTest(test)}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
-                      >
-                        Изменить
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTest(test.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                      >
-                        Удалить
-                      </button>
+                    <div className="flex justify-end md:ml-4">
+                      <span className="text-xs md:text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded">
+                        Только просмотр
+                      </span>
                     </div>
                   </div>
                 </div>

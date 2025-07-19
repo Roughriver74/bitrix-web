@@ -48,7 +48,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
 	const fetchLessons = useCallback(async () => {
 		if (courseId === null) return
 		try {
-			const response = await fetch(`/api/lessons?courseId=${courseId}`)
+			const response = await fetch(`/api/lessons?course_id=${courseId}`)
 			if (response.ok) {
 				const data = await response.json()
 				setLessons(data.lessons)
@@ -106,27 +106,21 @@ export default function CourseLessonsPage({ params }: PageProps) {
 	return (
 		<div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
 			<div className='container mx-auto px-4 py-8'>
-				<div className='mb-8'>
-					<div className='flex justify-between items-center mb-4'>
+				<div className='mb-6 md:mb-8'>
+					<div className='flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-4'>
 						<div>
-							<h1 className='text-3xl font-bold text-white'>
+							<h1 className='text-2xl md:text-3xl font-bold text-white break-words'>
 								Уроки курса: {course?.title}
 							</h1>
-							<p className='text-gray-600 dark:text-gray-400'>
+							<p className='text-gray-600 dark:text-gray-400 text-sm md:text-base'>
 								Управление уроками
 							</p>
 						</div>
-						<div className='flex space-x-2'>
+						<div className='flex flex-wrap gap-2 md:space-x-2'>
 							<ThemeToggle />
-							<button
-								onClick={() => setShowLessonForm(true)}
-								className='bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-800'
-							>
-								Добавить урок
-							</button>
 							<Link
 								href='/admin'
-								className='bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-600 dark:hover:bg-gray-700'
+								className='bg-gray-500 dark:bg-gray-600 text-white px-3 py-2 md:px-4 rounded text-sm md:text-base hover:bg-gray-600 dark:hover:bg-gray-700 flex-1 md:flex-none text-center'
 							>
 								Назад
 							</Link>
@@ -134,8 +128,21 @@ export default function CourseLessonsPage({ params }: PageProps) {
 					</div>
 				</div>
 
+				{/* Информация */}
+				<div className='bg-blue-900/20 border border-blue-500 rounded-lg p-3 md:p-4 mb-4 md:mb-6'>
+					<div className='flex items-start space-x-3'>
+						<div className='text-blue-400 mt-0.5'>ℹ️</div>
+						<div>
+							<h3 className='text-blue-200 font-medium text-sm md:text-base'>Режим просмотра</h3>
+							<p className='text-blue-300 text-xs md:text-sm mt-1'>
+								Уроки загружаются автоматически из blob storage. Создание и редактирование уроков через интерфейс пока не поддерживается.
+							</p>
+						</div>
+					</div>
+				</div>
+
 				{/* Уроки */}
-				<div className='bg-gray-800 rounded-lg shadow-md p-6'>
+				<div className='bg-gray-800 rounded-lg shadow-md p-4 md:p-6'>
 					{lessons.length === 0 ? (
 						<p className='text-gray-500 dark:text-gray-400'>Нет уроков</p>
 					) : (
@@ -143,40 +150,30 @@ export default function CourseLessonsPage({ params }: PageProps) {
 							{lessons.map(lesson => (
 								<div
 									key={lesson.id}
-									className='border dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700'
+									className='border dark:border-gray-600 rounded-lg p-3 md:p-4 hover:bg-gray-50 dark:hover:bg-gray-700'
 								>
-									<div className='flex justify-between items-start'>
-										<div className='flex-1'>
-											<h3 className='text-lg font-semibold text-white mb-2'>
+									<div className='flex flex-col space-y-3 md:flex-row md:justify-between md:items-start md:space-y-0'>
+										<div className='flex-1 min-w-0'>
+											<h3 className='text-base md:text-lg font-semibold text-white mb-2 break-words'>
 												{lesson.title}
 											</h3>
-											<div className='text-sm text-gray-500 dark:text-gray-400 mb-2'>
-												ID: {lesson.id} | Порядок: {lesson.order_index} |
-												Создан:{' '}
-												{new Date(lesson.created_at).toLocaleDateString()}
+											<div className='text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-2 flex flex-wrap gap-2'>
+												<span>ID: {lesson.id}</span>
+												<span>Порядок: {lesson.order_index}</span>
+												<span className='hidden md:inline'>
+													Создан: {new Date(lesson.created_at).toLocaleDateString()}
+												</span>
 											</div>
-											<div className='text-sm text-gray-600 dark:text-gray-300'>
+											<div className='text-xs md:text-sm text-gray-600 dark:text-gray-300'>
 												Символов: {lesson.content.length}
 											</div>
 										</div>
-										<div className='flex space-x-2 ml-4'>
+										<div className='flex justify-end md:ml-4'>
 											<button
 												onClick={() => setPreviewLesson(lesson)}
-												className='bg-blue-500 dark:bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 dark:hover:bg-blue-700'
+												className='bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 md:px-3 rounded text-xs md:text-sm hover:bg-blue-600 dark:hover:bg-blue-700'
 											>
 												Просмотр
-											</button>
-											<button
-												onClick={() => setEditingLesson(lesson)}
-												className='bg-yellow-500 dark:bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 dark:hover:bg-yellow-700'
-											>
-												Изменить
-											</button>
-											<button
-												onClick={() => handleDeleteLesson(lesson.id)}
-												className='bg-red-500 dark:bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-600 dark:hover:bg-red-700'
-											>
-												Удалить
 											</button>
 										</div>
 									</div>
