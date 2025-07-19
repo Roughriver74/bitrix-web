@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllCourses as getBlobCourses } from '@/lib/blob-storage'
-import { createConnection } from '@/lib/postgres'
 
 export async function GET(request: NextRequest) {
 	try {
 		const status = {
 			blob: { available: false, courses: 0, error: null as any },
-			postgres: { available: false, courses: 0, error: null as any },
 			recommendations: [] as string[],
 		}
 
@@ -24,66 +22,43 @@ export async function GET(request: NextRequest) {
 			status.blob.error = error
 		}
 
-		// Проверяем PostgreSQL
-		try {
-			if (process.env.POSTGRES_URL) {
-				const sql = createConnection()
-				const { rows } = await sql`SELECT COUNT(*) as count FROM courses`
-				status.postgres.available = true
-				status.postgres.courses = parseInt(rows[0].count)
-			} else {
-				status.postgres.error = 'POSTGRES_URL не настроен'
-			}
-		} catch (error) {
-			console.error('Ошибка проверки PostgreSQL:', error)
-			status.postgres.error = error
-		}
-
 		// Генерируем рекомендации
-		if (!status.blob.available && !status.postgres.available) {
+		if (!status.blob.available) {
 			status.recommendations.push(
-				'❌ Ни одна база данных недоступна. Проверьте переменные окружения.'
+				'❌ Blob storage недоступен. Проверьте переменную BLOB_READ_WRITE_TOKEN.'
 			)
 		}
 
 		if (status.blob.available && status.blob.courses === 0) {
 			status.recommendations.push(
-				'🔵 Blob storage пуст. Рекомендуется загрузить данные.'
+				'🔄 Blob storage доступен, но пуст. Выполните миграцию данных.'
 			)
 		}
 
-		if (status.postgres.available && status.postgres.courses === 0) {
+		if (status.blob.available && status.blob.courses > 0) {
 			status.recommendations.push(
-				'🟢 PostgreSQL пуст. Рекомендуется загрузить данные.'
+				'✅ Blob storage настроен и содержит данные.'
 			)
 		}
 
-		if (status.blob.courses > 0 && status.postgres.courses > 0) {
-			status.recommendations.push('✅ Данные доступны в обеих базах.')
-		} else if (status.blob.courses > 0 || status.postgres.courses > 0) {
-			status.recommendations.push(
-				'⚠️ Данные есть только в одной базе. Рекомендуется синхронизация.'
-			)
-		}
-
-		if (status.blob.courses === 0 && status.postgres.courses === 0) {
-			status.recommendations.push('🚨 Необходима немедленная миграция данных!')
-		}
+		const hasData = status.blob.available && status.blob.courses > 0
 
 		return NextResponse.json({
-			success: true,
-			status,
-			timestamp: new Date().toISOString(),
-			needsMigration:
-				status.blob.courses === 0 && status.postgres.courses === 0,
+			...status,
+			overall: {
+				healthy: status.blob.available,
+				hasData,
+				message: hasData 
+					? 'Система работает нормально' 
+					: 'Требуется настройка или миграция данных'
+			}
 		})
 	} catch (error) {
-		console.error('Ошибка проверки статуса данных:', error)
+		console.error('Ошибка проверки статуса:', error)
 		return NextResponse.json(
-			{
-				success: false,
-				error: 'Внутренняя ошибка сервера',
-				details: error,
+			{ 
+				error: 'Ошибка проверки статуса баз данных',
+				details: error instanceof Error ? error.message : 'Unknown error'
 			},
 			{ status: 500 }
 		)

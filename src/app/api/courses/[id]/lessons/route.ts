@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getLessonsByCourse } from '@/lib/postgres';
+import { getCourseById } from '@/lib/blob-storage';
 
 export async function GET(
   request: NextRequest,
@@ -16,8 +16,18 @@ export async function GET(
       );
     }
 
-    const lessons = await getLessonsByCourse(courseId);
-    return NextResponse.json({ lessons });
+    // Получаем курс с уроками из Blob storage
+    try {
+      const course = await getCourseById(courseId);
+      if (course && course.lessons) {
+        return NextResponse.json({ lessons: course.lessons });
+      } else {
+        return NextResponse.json({ lessons: [] });
+      }
+    } catch (blobError) {
+      console.log('Blob storage недоступен, возвращаем пустой массив');
+      return NextResponse.json({ lessons: [] });
+    }
   } catch (error) {
     console.error('Ошибка получения уроков курса:', error);
     return NextResponse.json(

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthToken, getUserFromToken } from '@/lib/auth'
 import { getAllCourses, createCourse } from '@/lib/blob-storage'
-import { sql } from '@vercel/postgres'
 
 // Статические курсы для локальной разработки
 const staticCourses = [
@@ -45,22 +44,6 @@ const staticCourses = [
 
 export async function GET() {
 	try {
-		// Сначала пытаемся получить курсы из PostgreSQL
-		try {
-			const result = await sql`
-        SELECT id, title, description, order_index, created_at 
-        FROM courses 
-        ORDER BY order_index ASC
-      `
-
-			if (result.rows.length > 0) {
-				console.log(`Получено ${result.rows.length} курсов из PostgreSQL`)
-				return NextResponse.json({ courses: result.rows })
-			}
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, пробуем Blob storage')
-		}
-
 		// Пытаемся получить из Blob storage
 		try {
 			const courses = await getAllCourses()
@@ -78,7 +61,7 @@ export async function GET() {
 	} catch (error) {
 		console.error('Ошибка получения курсов:', error)
 		return NextResponse.json(
-			{ error: 'Внутренняя ошибка сервера' },
+			{ error: 'Ошибка получения курсов' },
 			{ status: 500 }
 		)
 	}
@@ -87,60 +70,43 @@ export async function GET() {
 export async function POST(request: NextRequest) {
 	try {
 		const token = getAuthToken(request)
-
 		if (!token) {
 			return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
 		}
 
 		const user = await getUserFromToken(token)
-
 		if (!user || !user.is_admin) {
 			return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
 		}
 
 		const { title, description } = await request.json()
 
-		if (!title) {
+		if (!title || !description) {
 			return NextResponse.json(
-				{ error: 'Название курса обязательно' },
+				{ error: 'Название и описание обязательны' },
 				{ status: 400 }
 			)
 		}
 
-		// Пытаемся создать курс в PostgreSQL
 		try {
-			const result = await sql`
-        INSERT INTO courses (title, description, order_index)
-        VALUES (${title}, ${description || ''}, 0)
-        RETURNING id, title, description, order_index, created_at
-      `
+			const newCourse = await createCourse({
+				title,
+				description,
+				order_index: Date.now(), // Простой способ генерации порядка
+			})
 
-			const course = result.rows[0]
-			return NextResponse.json({ course })
-		} catch (postgresError) {
-			console.log('PostgreSQL недоступен, создаем курс в Blob storage')
-
-			// Fallback к Blob storage
-			try {
-				const course = await createCourse({
-					title,
-					description: description || '',
-					order_index: 0,
-				})
-
-				return NextResponse.json({ course })
-			} catch (blobError) {
-				console.log('Blob storage недоступен')
-				return NextResponse.json(
-					{ error: 'Базы данных недоступны для создания курса' },
-					{ status: 503 }
-				)
-			}
+			return NextResponse.json({ course: newCourse }, { status: 201 })
+		} catch (blobError) {
+			console.log('Blob storage недоступен')
+			return NextResponse.json(
+				{ error: 'База данных недоступна' },
+				{ status: 503 }
+			)
 		}
 	} catch (error) {
 		console.error('Ошибка создания курса:', error)
 		return NextResponse.json(
-			{ error: 'Внутренняя ошибка сервера' },
+			{ error: 'Ошибка создания курса' },
 			{ status: 500 }
 		)
 	}
